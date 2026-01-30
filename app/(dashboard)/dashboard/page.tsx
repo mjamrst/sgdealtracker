@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Target, DollarSign, TrendingUp, Clock } from "lucide-react";
 
 const stageLabels: Record<string, string> = {
+  new: "New",
   intro_made: "Intro Made",
   responded_yes: "Responded (Yes)",
   responded_no: "Responded (No)",
@@ -16,6 +17,7 @@ const stageLabels: Record<string, string> = {
 };
 
 const stageColors: Record<string, string> = {
+  new: "bg-gray-100 text-gray-700",
   intro_made: "bg-slate-100 text-slate-700",
   responded_yes: "bg-blue-100 text-blue-700",
   responded_no: "bg-orange-100 text-orange-700",

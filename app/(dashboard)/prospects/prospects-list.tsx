@@ -33,10 +33,12 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Prospect, ProspectStage, ProspectFunction } from "@/lib/types/database";
 
 const stageLabels: Record<ProspectStage, string> = {
+  new: "New",
   intro_made: "Intro Made",
   responded_yes: "Responded (Yes)",
   responded_no: "Responded (No)",
@@ -49,6 +51,7 @@ const stageLabels: Record<ProspectStage, string> = {
 };
 
 const stageColors: Record<ProspectStage, string> = {
+  new: "bg-gray-100 text-gray-700 hover:bg-gray-200",
   intro_made: "bg-slate-100 text-slate-700 hover:bg-slate-200",
   responded_yes: "bg-blue-100 text-blue-700 hover:bg-blue-200",
   responded_no: "bg-orange-100 text-orange-700 hover:bg-orange-200",
@@ -67,6 +70,30 @@ const functionLabels: Record<ProspectFunction, string> = {
   other: "Other",
 };
 
+const industries = [
+  "Advertising & Marketing",
+  "Agency",
+  "Alcohol & Spirits",
+  "Apparel & Fashion",
+  "Automotive",
+  "Beauty & Cosmetics",
+  "Consumer Electronics",
+  "Consumer Packaged Goods (CPG)",
+  "Entertainment & Media",
+  "Financial Services",
+  "Food & Beverage",
+  "Gaming",
+  "Healthcare & Pharma",
+  "Hospitality & Travel",
+  "Private Equity",
+  "Quick Service Restaurant (QSR)",
+  "Retail",
+  "Sports & Fitness",
+  "Technology",
+  "Telecommunications",
+  "Other",
+];
+
 interface ProspectsListProps {
   initialProspects: (Prospect & { startup: { name: string } | null })[];
   startups: { id: string; name: string }[];
@@ -78,7 +105,10 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [functionFilter, setFunctionFilter] = useState<string>("all");
+  const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkUpdating, setBulkUpdating] = useState(false);
   const [newProspect, setNewProspect] = useState({
     startup_id: startups[0]?.id || "",
     company_name: "",
@@ -101,7 +131,8 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
       prospect.industry?.toLowerCase().includes(search.toLowerCase());
     const matchesStage = stageFilter === "all" || prospect.stage === stageFilter;
     const matchesFunction = functionFilter === "all" || prospect.function === functionFilter;
-    return matchesSearch && matchesStage && matchesFunction;
+    const matchesIndustry = industryFilter === "all" || prospect.industry === industryFilter;
+    return matchesSearch && matchesStage && matchesFunction && matchesIndustry;
   });
 
   const handleStageChange = async (prospectId: string, newStage: ProspectStage) => {
@@ -119,6 +150,85 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
       prev.map((p) => (p.id === prospectId ? { ...p, stage: newStage } : p))
     );
     toast.success("Stage updated");
+  };
+
+  const handleFunctionChange = async (prospectId: string, newFunction: ProspectFunction) => {
+    const { error } = await supabase
+      .from("prospects")
+      .update({ function: newFunction })
+      .eq("id", prospectId);
+
+    if (error) {
+      toast.error("Failed to update function");
+      return;
+    }
+
+    setProspects((prev) =>
+      prev.map((p) => (p.id === prospectId ? { ...p, function: newFunction } : p))
+    );
+    toast.success("Function updated");
+  };
+
+  const handleIndustryChange = async (prospectId: string, newIndustry: string) => {
+    const { error } = await supabase
+      .from("prospects")
+      .update({ industry: newIndustry })
+      .eq("id", prospectId);
+
+    if (error) {
+      toast.error("Failed to update industry");
+      return;
+    }
+
+    setProspects((prev) =>
+      prev.map((p) => (p.id === prospectId ? { ...p, industry: newIndustry } : p))
+    );
+    toast.success("Industry updated");
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredProspects.map((p) => p.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (prospectId: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(prospectId);
+    } else {
+      newSelected.delete(prospectId);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkStageChange = async (newStage: ProspectStage) => {
+    if (selectedIds.size === 0) return;
+    setBulkUpdating(true);
+
+    const { error } = await supabase
+      .from("prospects")
+      .update({ stage: newStage })
+      .in("id", Array.from(selectedIds));
+
+    if (error) {
+      toast.error("Failed to update prospects");
+      setBulkUpdating(false);
+      return;
+    }
+
+    setProspects((prev) =>
+      prev.map((p) => (selectedIds.has(p.id) ? { ...p, stage: newStage } : p))
+    );
+    toast.success(`Updated ${selectedIds.size} prospect${selectedIds.size > 1 ? "s" : ""}`);
+    setSelectedIds(new Set());
+    setBulkUpdating(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
   };
 
   const handleCreateProspect = async (e: React.FormEvent) => {
@@ -251,13 +361,23 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="industry">Industry</Label>
-                  <Input
-                    id="industry"
+                  <Select
                     value={newProspect.industry}
-                    onChange={(e) =>
-                      setNewProspect((prev) => ({ ...prev, industry: e.target.value }))
+                    onValueChange={(value) =>
+                      setNewProspect((prev) => ({ ...prev, industry: value }))
                     }
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {industries.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="function">Function</Label>
@@ -372,13 +492,68 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
             ))}
           </SelectContent>
         </Select>
+        <Select value={industryFilter} onValueChange={setIndustryFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Industry" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Industries</SelectItem>
+            {industries.map((industry) => (
+              <SelectItem key={industry} value={industry}>
+                {industry}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+
+      {/* Bulk Actions Bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+          <span className="text-sm font-medium">
+            {selectedIds.size} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Change stage to:</span>
+            <Select
+              onValueChange={(value: ProspectStage) => handleBulkStageChange(value)}
+              disabled={bulkUpdating}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select stage" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(stageLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearSelection}
+            className="ml-auto"
+          >
+            <X className="h-4 w-4 mr-1" />
+            Clear
+          </Button>
+        </div>
+      )}
 
       {/* Table */}
       <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={filteredProspects.length > 0 && selectedIds.size === filteredProspects.length}
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
               <TableHead>Company</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Industry</TableHead>
@@ -391,13 +566,19 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
           <TableBody>
             {filteredProspects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   No prospects found
                 </TableCell>
               </TableRow>
             ) : (
               filteredProspects.map((prospect) => (
-                <TableRow key={prospect.id}>
+                <TableRow key={prospect.id} className={selectedIds.has(prospect.id) ? "bg-primary/5" : ""}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(prospect.id)}
+                      onCheckedChange={(checked) => handleSelectOne(prospect.id, checked as boolean)}
+                    />
+                  </TableCell>
                   <TableCell>
                     <Link
                       href={`/prospects/${prospect.id}`}
@@ -417,9 +598,39 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{prospect.industry || "-"}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{functionLabels[prospect.function]}</Badge>
+                    <Select
+                      value={prospect.industry || ""}
+                      onValueChange={(value) => handleIndustryChange(prospect.id, value)}
+                    >
+                      <SelectTrigger className="w-[180px] border-0 bg-transparent hover:bg-muted">
+                        <SelectValue placeholder="Select industry" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {industries.map((industry) => (
+                          <SelectItem key={industry} value={industry}>
+                            {industry}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={prospect.function}
+                      onValueChange={(value: ProspectFunction) => handleFunctionChange(prospect.id, value)}
+                    >
+                      <SelectTrigger className="w-[130px] border-0 bg-secondary/50 hover:bg-secondary">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(functionLabels).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     {prospect.estimated_value

@@ -10,6 +10,7 @@ export type UserRole = "admin" | "founder";
 export type MemberRole = "founder" | "team";
 export type ProspectFunction = "marketing" | "insights" | "partnerships" | "other";
 export type ProspectStage =
+  | "new"
   | "intro_made"
   | "responded_yes"
   | "responded_no"

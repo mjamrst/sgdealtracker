@@ -34,6 +34,7 @@ import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import type { Prospect, ProspectStage, ProspectFunction, ActivityLog, Profile } from "@/lib/types/database";
 
 const stageLabels: Record<ProspectStage, string> = {
+  new: "New",
   intro_made: "Intro Made",
   responded_yes: "Responded (Yes)",
   responded_no: "Responded (No)",
@@ -46,6 +47,7 @@ const stageLabels: Record<ProspectStage, string> = {
 };
 
 const stageColors: Record<ProspectStage, string> = {
+  new: "bg-gray-100 text-gray-700",
   intro_made: "bg-slate-100 text-slate-700",
   responded_yes: "bg-blue-100 text-blue-700",
   responded_no: "bg-orange-100 text-orange-700",
@@ -63,6 +65,30 @@ const functionLabels: Record<ProspectFunction, string> = {
   partnerships: "Partnerships",
   other: "Other",
 };
+
+const industries = [
+  "Advertising & Marketing",
+  "Agency",
+  "Alcohol & Spirits",
+  "Apparel & Fashion",
+  "Automotive",
+  "Beauty & Cosmetics",
+  "Consumer Electronics",
+  "Consumer Packaged Goods (CPG)",
+  "Entertainment & Media",
+  "Financial Services",
+  "Food & Beverage",
+  "Gaming",
+  "Healthcare & Pharma",
+  "Hospitality & Travel",
+  "Private Equity",
+  "Quick Service Restaurant (QSR)",
+  "Retail",
+  "Sports & Fitness",
+  "Technology",
+  "Telecommunications",
+  "Other",
+];
 
 interface ProspectDetailProps {
   prospect: Prospect & { startup: { id: string; name: string } | null };
@@ -204,13 +230,23 @@ export function ProspectDetail({ prospect: initialProspect, activities }: Prospe
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="industry">Industry</Label>
-                  <Input
-                    id="industry"
+                  <Select
                     value={prospect.industry || ""}
-                    onChange={(e) =>
-                      setProspect((prev) => ({ ...prev, industry: e.target.value }))
+                    onValueChange={(value) =>
+                      setProspect((prev) => ({ ...prev, industry: value }))
                     }
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {industries.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact_name">Contact Name</Label>
