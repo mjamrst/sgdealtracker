@@ -25,10 +25,10 @@ export default async function ProspectsPage() {
     startupIds = memberships?.map(m => m.startup_id) || [];
   }
 
-  // Get prospects
+  // Get prospects with owner info
   const { data: prospects } = await supabase
     .from("prospects")
-    .select("*, startup:startups(name)")
+    .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
     .in("startup_id", startupIds.length > 0 ? startupIds : ["none"])
     .order("updated_at", { ascending: false });
 
@@ -38,10 +38,17 @@ export default async function ProspectsPage() {
     .select("id, name")
     .in("id", startupIds.length > 0 ? startupIds : ["none"]);
 
+  // Get all users for owner dropdown
+  const { data: users } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .order("full_name", { ascending: true });
+
   return (
     <ProspectsList
       initialProspects={prospects || []}
       startups={startups || []}
+      users={users || []}
       isAdmin={profile?.role === "admin"}
     />
   );

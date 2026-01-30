@@ -140,6 +140,7 @@ export interface Database {
           notes: string | null;
           next_action: string | null;
           next_action_due: string | null;
+          owner_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -156,6 +157,7 @@ export interface Database {
           notes?: string | null;
           next_action?: string | null;
           next_action_due?: string | null;
+          owner_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -172,6 +174,7 @@ export interface Database {
           notes?: string | null;
           next_action?: string | null;
           next_action_due?: string | null;
+          owner_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

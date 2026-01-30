@@ -12,7 +12,7 @@ export default async function ProspectPage({ params }: PageProps) {
 
   const { data: prospect, error } = await supabase
     .from("prospects")
-    .select("*, startup:startups(id, name)")
+    .select("*, startup:startups(id, name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
     .eq("id", id)
     .single();
 
@@ -27,10 +27,17 @@ export default async function ProspectPage({ params }: PageProps) {
     .eq("prospect_id", id)
     .order("created_at", { ascending: false });
 
+  // Get all users for owner dropdown
+  const { data: users } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .order("full_name", { ascending: true });
+
   return (
     <ProspectDetail
       prospect={prospect}
       activities={activities || []}
+      users={users || []}
     />
   );
 }

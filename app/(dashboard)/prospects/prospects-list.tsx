@@ -95,12 +95,13 @@ const industries = [
 ];
 
 interface ProspectsListProps {
-  initialProspects: (Prospect & { startup: { name: string } | null })[];
+  initialProspects: (Prospect & { startup: { name: string } | null; owner: { id: string; full_name: string | null } | null })[];
   startups: { id: string; name: string }[];
+  users: { id: string; full_name: string | null; email: string }[];
   isAdmin: boolean;
 }
 
-export function ProspectsList({ initialProspects, startups, isAdmin }: ProspectsListProps) {
+export function ProspectsList({ initialProspects, startups, users, isAdmin }: ProspectsListProps) {
   const [prospects, setProspects] = useState(initialProspects);
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -120,6 +121,7 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
     notes: "",
     next_action: "",
     next_action_due: "",
+    owner_id: "",
   });
   const router = useRouter();
   const supabase = createClient();
@@ -186,6 +188,24 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
     toast.success("Industry updated");
   };
 
+  const handleOwnerChange = async (prospectId: string, newOwnerId: string | null) => {
+    const { error } = await supabase
+      .from("prospects")
+      .update({ owner_id: newOwnerId })
+      .eq("id", prospectId);
+
+    if (error) {
+      toast.error("Failed to update owner");
+      return;
+    }
+
+    const newOwner = newOwnerId ? users.find(u => u.id === newOwnerId) : null;
+    setProspects((prev) =>
+      prev.map((p) => (p.id === prospectId ? { ...p, owner_id: newOwnerId, owner: newOwner ? { id: newOwner.id, full_name: newOwner.full_name } : null } : p))
+    );
+    toast.success("Owner updated");
+  };
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedIds(new Set(filteredProspects.map((p) => p.id)));
@@ -247,8 +267,9 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
         notes: newProspect.notes || null,
         next_action: newProspect.next_action || null,
         next_action_due: newProspect.next_action_due || null,
+        owner_id: newProspect.owner_id || null,
       })
-      .select("*, startup:startups(name)")
+      .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
       .single();
 
     if (error) {
@@ -278,6 +299,7 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
       notes: "",
       next_action: "",
       next_action_due: "",
+      owner_id: "",
     });
     toast.success("Prospect created");
   };
@@ -432,6 +454,26 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
                   />
                 </div>
                 <div className="col-span-2 space-y-2">
+                  <Label htmlFor="owner">Owner</Label>
+                  <Select
+                    value={newProspect.owner_id}
+                    onValueChange={(value) =>
+                      setNewProspect((prev) => ({ ...prev, owner_id: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select owner (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.full_name || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2 space-y-2">
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
                     id="notes"
@@ -558,6 +600,7 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
               <TableHead>Contact</TableHead>
               <TableHead>Industry</TableHead>
               <TableHead>Function</TableHead>
+              <TableHead>Owner</TableHead>
               <TableHead>Value</TableHead>
               <TableHead>Stage</TableHead>
               <TableHead>Next Action</TableHead>
@@ -566,7 +609,7 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
           <TableBody>
             {filteredProspects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   No prospects found
                 </TableCell>
               </TableRow>
@@ -627,6 +670,24 @@ export function ProspectsList({ initialProspects, startups, isAdmin }: Prospects
                         {Object.entries(functionLabels).map(([value, label]) => (
                           <SelectItem key={value} value={value}>
                             {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={prospect.owner_id || "unassigned"}
+                      onValueChange={(value) => handleOwnerChange(prospect.id, value === "unassigned" ? null : value)}
+                    >
+                      <SelectTrigger className="w-[140px] border-0 bg-transparent hover:bg-muted">
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.full_name || user.email}
                           </SelectItem>
                         ))}
                       </SelectContent>

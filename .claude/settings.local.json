@@ -9,7 +9,8 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: SG Deal Tracker\n\nA complete sales tracking tool built with:\n- Next.js 14 \\(App Router\\) + TypeScript\n- Supabase \\(PostgreSQL, Auth, Storage\\)\n- Tailwind CSS + shadcn/ui\n\nFeatures:\n- Authentication with role-based access \\(Admin/Founder\\)\n- Dashboard with pipeline stats and activity feed\n- Prospects pipeline with deal stage management\n- Products management for pricing and offerings\n- Materials library with file upload and versioning\n- Invite system for team management\n- Automatic activity logging\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd bulk editing, industries dropdown, and inline editing\n\n- Add \"New\" stage as initial pipeline stage before \"Intro Made\"\n- Add bulk edit functionality with checkboxes to update multiple prospects at once\n- Add predefined industries list \\(CPG, Retail, Gaming, Agency, etc.\\)\n- Convert Industry and Function fields to dropdown selects\n- Add inline editing for Industry and Function in list view\n- Add industry filter to prospects list\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd bulk editing, industries dropdown, and inline editing\n\n- Add \"New\" stage as initial pipeline stage before \"Intro Made\"\n- Add bulk edit functionality with checkboxes to update multiple prospects at once\n- Add predefined industries list \\(CPG, Retail, Gaming, Agency, etc.\\)\n- Convert Industry and Function fields to dropdown selects\n- Add inline editing for Industry and Function in list view\n- Add industry filter to prospects list\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)"
     ]
   }
 }

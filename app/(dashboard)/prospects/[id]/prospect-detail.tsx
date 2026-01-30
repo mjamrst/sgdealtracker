@@ -91,11 +91,12 @@ const industries = [
 ];
 
 interface ProspectDetailProps {
-  prospect: Prospect & { startup: { id: string; name: string } | null };
+  prospect: Prospect & { startup: { id: string; name: string } | null; owner: { id: string; full_name: string | null } | null };
   activities: (ActivityLog & { user: Pick<Profile, "full_name"> | null })[];
+  users: { id: string; full_name: string | null; email: string }[];
 }
 
-export function ProspectDetail({ prospect: initialProspect, activities }: ProspectDetailProps) {
+export function ProspectDetail({ prospect: initialProspect, activities, users }: ProspectDetailProps) {
   const [prospect, setProspect] = useState(initialProspect);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -118,6 +119,7 @@ export function ProspectDetail({ prospect: initialProspect, activities }: Prospe
         notes: prospect.notes,
         next_action: prospect.next_action,
         next_action_due: prospect.next_action_due,
+        owner_id: prospect.owner_id,
       })
       .eq("id", prospect.id);
 
@@ -302,6 +304,31 @@ export function ProspectDetail({ prospect: initialProspect, activities }: Prospe
                       }))
                     }
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="owner">Owner</Label>
+                  <Select
+                    value={prospect.owner_id || "unassigned"}
+                    onValueChange={(value) =>
+                      setProspect((prev) => ({
+                        ...prev,
+                        owner_id: value === "unassigned" ? null : value,
+                        owner: value === "unassigned" ? null : users.find(u => u.id === value) ? { id: value, full_name: users.find(u => u.id === value)?.full_name || null } : null
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.full_name || user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
