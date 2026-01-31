@@ -306,19 +306,19 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Prospects</h1>
           <p className="text-muted-foreground">Manage your sales pipeline</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Prospect
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Prospect</DialogTitle>
               <DialogDescription>
@@ -326,7 +326,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateProspect} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {startups.length > 1 && (
                   <div className="col-span-2 space-y-2">
                     <Label htmlFor="startup">Startup</Label>
@@ -485,11 +485,11 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">
                   Cancel
                 </Button>
-                <Button type="submit">Create Prospect</Button>
+                <Button type="submit" className="w-full sm:w-auto">Create Prospect</Button>
               </div>
             </form>
           </DialogContent>
@@ -497,8 +497,8 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+        <div className="relative w-full sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search prospects..."
@@ -507,61 +507,73 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={stageFilter} onValueChange={setStageFilter}>
-          <SelectTrigger className="w-[180px]">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Stage" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Stages</SelectItem>
-            {Object.entries(stageLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={functionFilter} onValueChange={setFunctionFilter}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Function" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Functions</SelectItem>
-            {Object.entries(functionLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={industryFilter} onValueChange={setIndustryFilter}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Industry" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Industries</SelectItem>
-            {industries.map((industry) => (
-              <SelectItem key={industry} value={industry}>
-                {industry}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-4">
+          <Select value={stageFilter} onValueChange={setStageFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Stage" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stages</SelectItem>
+              {Object.entries(stageLabels).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={functionFilter} onValueChange={setFunctionFilter}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Function" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Functions</SelectItem>
+              {Object.entries(functionLabels).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={industryFilter} onValueChange={setIndustryFilter}>
+            <SelectTrigger className="w-full col-span-2 sm:col-span-1 sm:w-[200px]">
+              <SelectValue placeholder="Industry" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Industries</SelectItem>
+              {industries.map((industry) => (
+                <SelectItem key={industry} value={industry}>
+                  {industry}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Bulk Actions Bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
-          <span className="text-sm font-medium">
-            {selectedIds.size} selected
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Change stage to:</span>
+        <div className="flex flex-col gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20 sm:flex-row sm:items-center sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start sm:gap-4">
+            <span className="text-sm font-medium">
+              {selectedIds.size} selected
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="sm:hidden"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 flex-1">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Change stage to:</span>
             <Select
               onValueChange={(value: ProspectStage) => handleBulkStageChange(value)}
               disabled={bulkUpdating}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="flex-1 sm:w-[180px] sm:flex-initial">
                 <SelectValue placeholder="Select stage" />
               </SelectTrigger>
               <SelectContent>
@@ -577,7 +589,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
             variant="ghost"
             size="sm"
             onClick={clearSelection}
-            className="ml-auto"
+            className="hidden sm:flex ml-auto"
           >
             <X className="h-4 w-4 mr-1" />
             Clear
@@ -586,7 +598,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
       )}
 
       {/* Table */}
-      <div className="rounded-xl border bg-card">
+      <div className="rounded-xl border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -597,13 +609,13 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                 />
               </TableHead>
               <TableHead>Company</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Industry</TableHead>
-              <TableHead>Function</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Value</TableHead>
+              <TableHead className="hidden sm:table-cell">Contact</TableHead>
+              <TableHead className="hidden lg:table-cell">Industry</TableHead>
+              <TableHead className="hidden lg:table-cell">Function</TableHead>
+              <TableHead className="hidden md:table-cell">Owner</TableHead>
+              <TableHead className="hidden md:table-cell">Value</TableHead>
               <TableHead>Stage</TableHead>
-              <TableHead>Next Action</TableHead>
+              <TableHead className="hidden xl:table-cell">Next Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -632,8 +644,14 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                     {isAdmin && prospect.startup && (
                       <p className="text-xs text-muted-foreground">{prospect.startup.name}</p>
                     )}
+                    {/* Show contact info on mobile since Contact column is hidden */}
+                    <div className="sm:hidden mt-1">
+                      {prospect.contact_name && (
+                        <p className="text-xs text-muted-foreground">{prospect.contact_name}</p>
+                      )}
+                    </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <div>
                       <p>{prospect.contact_name || "-"}</p>
                       {prospect.contact_email && (
@@ -641,7 +659,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     <Select
                       value={prospect.industry || ""}
                       onValueChange={(value) => handleIndustryChange(prospect.id, value)}
@@ -658,7 +676,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     <Select
                       value={prospect.function}
                       onValueChange={(value: ProspectFunction) => handleFunctionChange(prospect.id, value)}
@@ -675,7 +693,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Select
                       value={prospect.owner_id || "unassigned"}
                       onValueChange={(value) => handleOwnerChange(prospect.id, value === "unassigned" ? null : value)}
@@ -693,7 +711,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {prospect.estimated_value
                       ? `$${prospect.estimated_value.toLocaleString()}`
                       : "-"}
@@ -705,7 +723,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                         handleStageChange(prospect.id, value)
                       }
                     >
-                      <SelectTrigger className={`w-[160px] border-0 ${stageColors[prospect.stage]}`}>
+                      <SelectTrigger className={`w-[120px] sm:w-[160px] border-0 ${stageColors[prospect.stage]}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -717,7 +735,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden xl:table-cell">
                     {prospect.next_action ? (
                       <div>
                         <p className="text-sm">{prospect.next_action}</p>
