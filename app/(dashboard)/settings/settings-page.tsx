@@ -45,8 +45,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Save, Plus, Send, Copy, Trash2, Building2, Users, Mail } from "lucide-react";
+import { Save, Plus, Send, Copy, Trash2, Building2, Users, Mail, UserPlus, Clock } from "lucide-react";
 import type { Profile, MemberRole } from "@/lib/types/database";
+import { createUserWithPassword } from "./actions";
 
 interface SettingsPageProps {
   profile: Profile | null;
@@ -59,9 +60,17 @@ interface SettingsPageProps {
     expires_at: string;
     startup: { name: string } | null;
   }[];
+  teamMembers: {
+    id: string;
+    email: string;
+    full_name: string | null;
+    last_sign_in_at: string | null;
+    created_at: string;
+    startup_members: { startup: { id: string; name: string } | null; role: string }[];
+  }[];
 }
 
-export function SettingsPage({ profile, isAdmin, startups, invites: initialInvites }: SettingsPageProps) {
+export function SettingsPage({ profile, isAdmin, startups, invites: initialInvites, teamMembers: initialTeamMembers }: SettingsPageProps) {
   const [profileData, setProfileData] = useState({
     full_name: profile?.full_name || "",
   });
@@ -78,6 +87,16 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
     name: "",
     description: "",
     category: "",
+  });
+  const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
+  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: "",
+    password: "",
+    full_name: "",
+    startup_id: startups[0]?.id || "",
+    role: "founder" as MemberRole,
   });
   const router = useRouter();
   const supabase = createClient();
@@ -183,6 +202,37 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
     setIsStartupDialogOpen(false);
     setStartupData({ name: "", description: "", category: "" });
     toast.success("Startup created");
+    router.refresh();
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingUser(true);
+
+    const result = await createUserWithPassword({
+      email: newUserData.email,
+      password: newUserData.password,
+      full_name: newUserData.full_name,
+      startup_id: newUserData.startup_id,
+      role: newUserData.role,
+    });
+
+    if (result.error) {
+      toast.error(result.error);
+      setCreatingUser(false);
+      return;
+    }
+
+    setIsCreateUserDialogOpen(false);
+    setNewUserData({
+      email: "",
+      password: "",
+      full_name: "",
+      startup_id: startups[0]?.id || "",
+      role: "founder",
+    });
+    setCreatingUser(false);
+    toast.success("User created successfully");
     router.refresh();
   };
 
@@ -389,6 +439,183 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                                   </AlertDialogContent>
                                 </AlertDialog>
                               </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Team Members Section */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Team Members</CardTitle>
+                    <CardDescription>
+                      Manage users and view their activity
+                    </CardDescription>
+                  </div>
+                  <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Create User
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New User</DialogTitle>
+                        <DialogDescription>
+                          Create a user account with a password
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateUser} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="user-name">Full Name *</Label>
+                          <Input
+                            id="user-name"
+                            value={newUserData.full_name}
+                            onChange={(e) =>
+                              setNewUserData((prev) => ({ ...prev, full_name: e.target.value }))
+                            }
+                            placeholder="John Doe"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="user-email">Email *</Label>
+                          <Input
+                            id="user-email"
+                            type="email"
+                            value={newUserData.email}
+                            onChange={(e) =>
+                              setNewUserData((prev) => ({ ...prev, email: e.target.value }))
+                            }
+                            placeholder="user@example.com"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="user-password">Password *</Label>
+                          <Input
+                            id="user-password"
+                            type="password"
+                            value={newUserData.password}
+                            onChange={(e) =>
+                              setNewUserData((prev) => ({ ...prev, password: e.target.value }))
+                            }
+                            placeholder="Minimum 6 characters"
+                            minLength={6}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="user-startup">Startup</Label>
+                          <Select
+                            value={newUserData.startup_id}
+                            onValueChange={(value) =>
+                              setNewUserData((prev) => ({ ...prev, startup_id: value }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select startup" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {startups.map((startup) => (
+                                <SelectItem key={startup.id} value={startup.id}>
+                                  {startup.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="user-role">Role</Label>
+                          <Select
+                            value={newUserData.role}
+                            onValueChange={(value: MemberRole) =>
+                              setNewUserData((prev) => ({ ...prev, role: value }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="founder">Founder</SelectItem>
+                              <SelectItem value="team">Team Member</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsCreateUserDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" disabled={creatingUser}>
+                            {creatingUser ? "Creating..." : "Create User"}
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  {teamMembers.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No team members yet</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Startup</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Last Sign In</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {teamMembers.map((member) => (
+                          <TableRow key={member.id}>
+                            <TableCell className="font-medium">
+                              {member.full_name || "-"}
+                            </TableCell>
+                            <TableCell>{member.email}</TableCell>
+                            <TableCell>
+                              {member.startup_members.length > 0
+                                ? member.startup_members
+                                    .map((sm) => sm.startup?.name)
+                                    .filter(Boolean)
+                                    .join(", ")
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="capitalize">
+                              {member.startup_members.length > 0
+                                ? member.startup_members[0]?.role || "-"
+                                : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {member.last_sign_in_at ? (
+                                <div className="flex items-center gap-1 text-sm">
+                                  <Clock className="h-3 w-3 text-muted-foreground" />
+                                  {new Date(member.last_sign_in_at).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                  })}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">Never</span>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}

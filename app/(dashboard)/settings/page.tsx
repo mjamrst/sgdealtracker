@@ -53,12 +53,48 @@ export default async function Settings() {
     }));
   }
 
+  // Get team members (admin only)
+  let teamMembers: {
+    id: string;
+    email: string;
+    full_name: string | null;
+    last_sign_in_at: string | null;
+    created_at: string;
+    startup_members: { startup: { id: string; name: string } | null; role: string }[];
+  }[] = [];
+  if (isAdmin) {
+    const { data } = await supabase
+      .from("profiles")
+      .select(`
+        id,
+        email,
+        full_name,
+        last_sign_in_at,
+        created_at,
+        startup_members (
+          startup:startups (id, name),
+          role
+        )
+      `)
+      .neq("role", "admin")
+      .order("created_at", { ascending: false });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    teamMembers = (data || []).map((d: any) => ({
+      ...d,
+      startup_members: (d.startup_members || []).map((sm: any) => ({
+        ...sm,
+        startup: Array.isArray(sm.startup) ? sm.startup[0] || null : sm.startup
+      }))
+    }));
+  }
+
   return (
     <SettingsPage
       profile={profile}
       isAdmin={isAdmin}
       startups={startups}
       invites={invites}
+      teamMembers={teamMembers}
     />
   );
 }
