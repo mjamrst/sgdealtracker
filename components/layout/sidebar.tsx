@@ -1,10 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   LayoutDashboard,
   Users,
@@ -13,7 +20,11 @@ import {
   Settings,
   LogOut,
   Target,
+  Building2,
+  ChevronDown,
+  Check,
 } from "lucide-react";
+import { setCurrentStartup } from "@/app/actions/startup";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -29,9 +40,11 @@ interface SidebarProps {
     full_name: string | null;
     role: string;
   };
+  startups: { id: string; name: string }[];
+  currentStartup: { id: string; name: string } | null;
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, startups, currentStartup }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -42,14 +55,72 @@ export function Sidebar({ user }: SidebarProps) {
     router.refresh();
   };
 
+  const handleStartupChange = async (startupId: string) => {
+    await setCurrentStartup(startupId);
+    router.refresh();
+  };
+
+  // Get startup initials for logo placeholder
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="flex h-full w-16 md:w-64 flex-col bg-card border-r border-border transition-all">
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-2 px-3 md:px-6 border-b border-border justify-center md:justify-start">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shrink-0">
-          <Target className="h-5 w-5 text-primary-foreground" />
-        </div>
-        <span className="font-semibold text-lg hidden md:block">SG Deal Tracker</span>
+      {/* Startup Selector */}
+      <div className="border-b border-border">
+        {startups.length > 1 ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex h-16 w-full items-center gap-3 px-3 md:px-4 hover:bg-accent/50 transition-colors">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm shrink-0">
+                  {currentStartup ? getInitials(currentStartup.name) : "?"}
+                </div>
+                <div className="flex-1 min-w-0 text-left hidden md:block">
+                  <p className="font-semibold text-sm truncate">
+                    {currentStartup?.name || "Select Startup"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Switch workspace</p>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 hidden md:block" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {startups.map((startup) => (
+                <DropdownMenuItem
+                  key={startup.id}
+                  onClick={() => handleStartupChange(startup.id)}
+                  className="flex items-center gap-3"
+                >
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-xs">
+                    {getInitials(startup.name)}
+                  </div>
+                  <span className="flex-1">{startup.name}</span>
+                  {currentStartup?.id === startup.id && (
+                    <Check className="h-4 w-4 text-primary" />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <div className="flex h-16 items-center gap-3 px-3 md:px-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm shrink-0">
+              {currentStartup ? getInitials(currentStartup.name) : <Building2 className="h-5 w-5" />}
+            </div>
+            <div className="flex-1 min-w-0 hidden md:block">
+              <p className="font-semibold text-sm truncate">
+                {currentStartup?.name || "No Startup"}
+              </p>
+              <p className="text-xs text-muted-foreground">Workspace</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
