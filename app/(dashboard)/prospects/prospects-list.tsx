@@ -33,9 +33,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Search, Filter, X, ChevronRight } from "lucide-react";
+import { Plus, Search, Filter, X, ChevronRight, Sparkles } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Prospect, ProspectStage, ProspectFunction } from "@/lib/types/database";
+import type { Prospect, ProspectStage, ProspectFunction, ProspectSource } from "@/lib/types/database";
 
 const stageLabels: Record<ProspectStage, string> = {
   new: "New",
@@ -281,6 +281,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
         next_action: newProspect.next_action || null,
         next_action_due: newProspect.next_action_due || null,
         owner_id: newProspect.owner_id || null,
+        source: "manual",
       })
       .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
       .single();
@@ -629,6 +630,12 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageBadgeColors[prospect.stage]}`}>
                   {stageLabels[prospect.stage]}
                 </span>
+                {prospect.source === "ai_generated" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                    <Sparkles className="h-3 w-3" />
+                    AI
+                  </span>
+                )}
                 {prospect.industry && (
                   <span className="text-xs text-muted-foreground">
                     {prospect.industry}
@@ -736,22 +743,29 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                     </Select>
                   </TableCell>
                   <TableCell className="hidden xl:table-cell">
-                    <Select
-                      value={prospect.owner_id || "unassigned"}
-                      onValueChange={(value) => handleOwnerChange(prospect.id, value === "unassigned" ? null : value)}
-                    >
-                      <SelectTrigger className="w-[130px] border-0 bg-transparent hover:bg-muted">
-                        <SelectValue placeholder="Unassigned" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="unassigned">Unassigned</SelectItem>
-                        {users.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            {user.full_name || user.email}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {prospect.source === "ai_generated" ? (
+                      <div className="flex items-center gap-1.5 text-purple-600">
+                        <Sparkles className="h-4 w-4" />
+                        <span className="text-sm font-medium">AI Generated</span>
+                      </div>
+                    ) : (
+                      <Select
+                        value={prospect.owner_id || "unassigned"}
+                        onValueChange={(value) => handleOwnerChange(prospect.id, value === "unassigned" ? null : value)}
+                      >
+                        <SelectTrigger className="w-[130px] border-0 bg-transparent hover:bg-muted">
+                          <SelectValue placeholder="Unassigned" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.full_name || user.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </TableCell>
                   <TableCell>
                     {prospect.estimated_value

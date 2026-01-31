@@ -21,6 +21,7 @@ export type ProspectStage =
   | "closed_won"
   | "closed_lost";
 export type MaterialType = "pitch_deck" | "trend_report" | "other";
+export type ProspectSource = "manual" | "ai_generated";
 export type ActivityType =
   | "stage_change"
   | "note_added"
@@ -144,6 +145,7 @@ export interface Database {
           next_action: string | null;
           next_action_due: string | null;
           owner_id: string | null;
+          source: ProspectSource;
           created_at: string;
           updated_at: string;
         };
@@ -161,6 +163,7 @@ export interface Database {
           next_action?: string | null;
           next_action_due?: string | null;
           owner_id?: string | null;
+          source?: ProspectSource;
           created_at?: string;
           updated_at?: string;
         };
@@ -178,6 +181,7 @@ export interface Database {
           next_action?: string | null;
           next_action_due?: string | null;
           owner_id?: string | null;
+          source?: ProspectSource;
           created_at?: string;
           updated_at?: string;
         };
@@ -316,6 +320,7 @@ export interface Database {
       member_role: MemberRole;
       prospect_function: ProspectFunction;
       prospect_stage: ProspectStage;
+      prospect_source: ProspectSource;
       material_type: MaterialType;
       activity_type: ActivityType;
     };
