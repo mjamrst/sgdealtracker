@@ -4,10 +4,14 @@ import { ProductsList } from "./products-list";
 export default async function ProductsPage() {
   const supabase = await createClient();
 
-  // Get user's startups
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get user's profile by ID
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, role")
+    .eq("id", user?.id || "")
     .single();
 
   let startupIds: string[] = [];
@@ -26,17 +30,25 @@ export default async function ProductsPage() {
   }
 
   // Get products
-  const { data: products } = await supabase
-    .from("products")
-    .select("*, startup:startups(name)")
-    .in("startup_id", startupIds.length > 0 ? startupIds : ["none"])
-    .order("created_at", { ascending: false });
+  let products: any[] = [];
+  if (startupIds.length > 0) {
+    const { data } = await supabase
+      .from("products")
+      .select("*, startup:startups(name)")
+      .in("startup_id", startupIds)
+      .order("created_at", { ascending: false });
+    products = data || [];
+  }
 
   // Get startups for the dropdown
-  const { data: startups } = await supabase
-    .from("startups")
-    .select("id, name")
-    .in("id", startupIds.length > 0 ? startupIds : ["none"]);
+  let startups: { id: string; name: string }[] = [];
+  if (startupIds.length > 0) {
+    const { data } = await supabase
+      .from("startups")
+      .select("id, name")
+      .in("id", startupIds);
+    startups = data || [];
+  }
 
   return (
     <ProductsList

@@ -4,10 +4,14 @@ import { MaterialsList } from "./materials-list";
 export default async function MaterialsPage() {
   const supabase = await createClient();
 
-  // Get user's startups
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get user's profile by ID
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, role")
+    .eq("id", user?.id || "")
     .single();
 
   let startupIds: string[] = [];
@@ -26,28 +30,36 @@ export default async function MaterialsPage() {
   }
 
   // Get materials with versions
-  const { data: materials } = await supabase
-    .from("materials")
-    .select(`
-      *,
-      startup:startups(name),
-      versions:material_versions(
-        id,
-        version_number,
-        file_name,
-        file_path,
-        uploaded_at,
-        uploaded_by
-      )
-    `)
-    .in("startup_id", startupIds.length > 0 ? startupIds : ["none"])
-    .order("created_at", { ascending: false });
+  let materials: any[] = [];
+  if (startupIds.length > 0) {
+    const { data } = await supabase
+      .from("materials")
+      .select(`
+        *,
+        startup:startups(name),
+        versions:material_versions(
+          id,
+          version_number,
+          file_name,
+          file_path,
+          uploaded_at,
+          uploaded_by
+        )
+      `)
+      .in("startup_id", startupIds)
+      .order("created_at", { ascending: false });
+    materials = data || [];
+  }
 
   // Get startups for the dropdown
-  const { data: startups } = await supabase
-    .from("startups")
-    .select("id, name")
-    .in("id", startupIds.length > 0 ? startupIds : ["none"]);
+  let startups: { id: string; name: string }[] = [];
+  if (startupIds.length > 0) {
+    const { data } = await supabase
+      .from("startups")
+      .select("id, name")
+      .in("id", startupIds);
+    startups = data || [];
+  }
 
   return (
     <MaterialsList
