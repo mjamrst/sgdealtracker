@@ -32,10 +32,14 @@ const stageColors: Record<string, string> = {
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  // Get user's startups
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get user's profile by ID
   const { data: profileData } = await supabase
     .from("profiles")
     .select("id, role")
+    .eq("id", user?.id || "")
     .single();
 
   const profile = profileData as { id: string; role: string } | null;

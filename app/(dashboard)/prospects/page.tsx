@@ -4,10 +4,14 @@ import { ProspectsList } from "./prospects-list";
 export default async function ProspectsPage() {
   const supabase = await createClient();
 
-  // Get user's startups
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get user's profile by ID
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, role")
+    .eq("id", user?.id || "")
     .single();
 
   let startupIds: string[] = [];
