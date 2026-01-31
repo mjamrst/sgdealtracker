@@ -29,6 +29,32 @@ const stageColors: Record<string, string> = {
   closed_lost: "bg-red-100 text-red-700",
 };
 
+const stageBarColors: Record<string, string> = {
+  new: "bg-gray-400",
+  intro_made: "bg-slate-400",
+  responded_yes: "bg-blue-500",
+  responded_no: "bg-orange-400",
+  meeting_scheduled: "bg-purple-500",
+  demo_completed_yes: "bg-cyan-500",
+  demo_completed_no: "bg-amber-500",
+  proposal_sent: "bg-indigo-500",
+  closed_won: "bg-green-500",
+  closed_lost: "bg-red-400",
+};
+
+const stageDotColors: Record<string, string> = {
+  new: "bg-gray-400",
+  intro_made: "bg-slate-400",
+  responded_yes: "bg-blue-500",
+  responded_no: "bg-orange-400",
+  meeting_scheduled: "bg-purple-500",
+  demo_completed_yes: "bg-cyan-500",
+  demo_completed_no: "bg-amber-500",
+  proposal_sent: "bg-indigo-500",
+  closed_won: "bg-green-500",
+  closed_lost: "bg-red-400",
+};
+
 export default async function DashboardPage() {
   const supabase = await createClient();
 
@@ -179,12 +205,13 @@ export default async function DashboardPage() {
                 const percentage = totalProspects > 0 ? (count / totalProspects) * 100 : 0;
                 return (
                   <div key={stage} className="flex items-center gap-3">
-                    <div className="w-32 text-sm text-muted-foreground truncate">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${stageDotColors[stage]}`} />
+                    <div className="w-28 text-sm text-muted-foreground truncate">
                       {label}
                     </div>
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-primary rounded-full transition-all"
+                        className={`h-full rounded-full transition-all ${stageBarColors[stage]}`}
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
