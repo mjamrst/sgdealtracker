@@ -1,8 +1,10 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { MaterialsList } from "./materials-list";
 
 export default async function MaterialsPage() {
   const supabase = await createClient();
+  const cookieStore = await cookies();
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
@@ -14,24 +16,30 @@ export default async function MaterialsPage() {
     .eq("id", user?.id || "")
     .single();
 
-  let startupIds: string[] = [];
+  // Get current startup from cookie
+  const currentStartupId = cookieStore.get("current_startup_id")?.value;
 
-  if (profile?.role === "admin") {
-    const { data: allStartups } = await supabase
-      .from("startups")
-      .select("id");
-    startupIds = allStartups?.map(s => s.id) || [];
-  } else if (profile) {
-    const { data: memberships } = await supabase
-      .from("startup_members")
-      .select("startup_id")
-      .eq("user_id", profile.id);
-    startupIds = memberships?.map(m => m.startup_id) || [];
+  // Verify user has access to this startup
+  let hasAccess = false;
+  if (currentStartupId) {
+    if (profile?.role === "admin") {
+      hasAccess = true;
+    } else if (profile) {
+      const { data: membership } = await supabase
+        .from("startup_members")
+        .select("id")
+        .eq("user_id", profile.id)
+        .eq("startup_id", currentStartupId)
+        .single();
+      hasAccess = !!membership;
+    }
   }
 
-  // Get materials with versions
+  const startupId = hasAccess ? currentStartupId : null;
+
+  // Get materials with versions for current startup only
   let materials: any[] = [];
-  if (startupIds.length > 0) {
+  if (startupId) {
     const { data } = await supabase
       .from("materials")
       .select(`
@@ -46,18 +54,18 @@ export default async function MaterialsPage() {
           uploaded_by
         )
       `)
-      .in("startup_id", startupIds)
+      .eq("startup_id", startupId)
       .order("created_at", { ascending: false });
     materials = data || [];
   }
 
-  // Get startups for the dropdown
+  // Get current startup for the form
   let startups: { id: string; name: string }[] = [];
-  if (startupIds.length > 0) {
+  if (startupId) {
     const { data } = await supabase
       .from("startups")
       .select("id, name")
-      .in("id", startupIds);
+      .eq("id", startupId);
     startups = data || [];
   }
 

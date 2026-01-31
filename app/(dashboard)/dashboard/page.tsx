@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,7 @@ const stageDotColors: Record<string, string> = {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const cookieStore = await cookies();
 
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
@@ -70,30 +72,35 @@ export default async function DashboardPage() {
 
   const profile = profileData as { id: string; role: string } | null;
 
-  let startupIds: string[] = [];
+  // Get current startup from cookie
+  const currentStartupId = cookieStore.get("current_startup_id")?.value;
 
-  if (profile?.role === "admin") {
-    const { data: allStartups } = await supabase
-      .from("startups")
-      .select("id");
-    const startups = allStartups as { id: string }[] | null;
-    startupIds = startups?.map(s => s.id) || [];
-  } else if (profile) {
-    const { data: memberships } = await supabase
-      .from("startup_members")
-      .select("startup_id")
-      .eq("user_id", profile.id);
-    const members = memberships as { startup_id: string }[] | null;
-    startupIds = members?.map(m => m.startup_id) || [];
+  // Verify user has access to this startup
+  let hasAccess = false;
+  if (currentStartupId) {
+    if (profile?.role === "admin") {
+      hasAccess = true;
+    } else if (profile) {
+      const { data: membership } = await supabase
+        .from("startup_members")
+        .select("id")
+        .eq("user_id", profile.id)
+        .eq("startup_id", currentStartupId)
+        .single();
+      hasAccess = !!membership;
+    }
   }
 
-  // Get prospects stats
+  // If no valid startup selected, show empty state
+  const startupId = hasAccess ? currentStartupId : null;
+
+  // Get prospects stats for current startup only
   let prospects: { id: string; stage: string; estimated_value: number | null }[] = [];
-  if (startupIds.length > 0) {
+  if (startupId) {
     const { data: prospectsData } = await supabase
       .from("prospects")
       .select("id, stage, estimated_value")
-      .in("startup_id", startupIds);
+      .eq("startup_id", startupId);
     prospects = (prospectsData as typeof prospects) || [];
   }
 
@@ -107,26 +114,26 @@ export default async function DashboardPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  // Get recent activity
+  // Get recent activity for current startup
   let activities: { id: string; description: string; created_at: string; action_type: string }[] = [];
-  if (startupIds.length > 0) {
+  if (startupId) {
     const { data: activitiesData } = await supabase
       .from("activity_log")
       .select("id, description, created_at, action_type")
-      .in("startup_id", startupIds)
+      .eq("startup_id", startupId)
       .order("created_at", { ascending: false })
       .limit(10);
     activities = (activitiesData as typeof activities) || [];
   }
 
-  // Get prospects with upcoming actions
+  // Get prospects with upcoming actions for current startup
   const today = new Date().toISOString().split("T")[0];
   let upcomingActions: { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] = [];
-  if (startupIds.length > 0) {
+  if (startupId) {
     const { data: upcomingActionsData } = await supabase
       .from("prospects")
       .select("id, company_name, next_action, next_action_due")
-      .in("startup_id", startupIds)
+      .eq("startup_id", startupId)
       .gte("next_action_due", today)
       .not("next_action", "is", null)
       .order("next_action_due", { ascending: true })
