@@ -26,17 +26,25 @@ export default async function ProspectsPage() {
   }
 
   // Get prospects with owner info
-  const { data: prospects } = await supabase
-    .from("prospects")
-    .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
-    .in("startup_id", startupIds.length > 0 ? startupIds : ["none"])
-    .order("updated_at", { ascending: false });
+  let prospects: any[] = [];
+  if (startupIds.length > 0) {
+    const { data } = await supabase
+      .from("prospects")
+      .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
+      .in("startup_id", startupIds)
+      .order("updated_at", { ascending: false });
+    prospects = data || [];
+  }
 
   // Get startups for the dropdown
-  const { data: startups } = await supabase
-    .from("startups")
-    .select("id, name")
-    .in("id", startupIds.length > 0 ? startupIds : ["none"]);
+  let startups: { id: string; name: string }[] = [];
+  if (startupIds.length > 0) {
+    const { data } = await supabase
+      .from("startups")
+      .select("id, name")
+      .in("id", startupIds);
+    startups = data || [];
+  }
 
   // Get all users for owner dropdown
   const { data: users } = await supabase

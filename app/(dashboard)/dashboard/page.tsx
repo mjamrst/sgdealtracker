@@ -58,45 +58,51 @@ export default async function DashboardPage() {
   }
 
   // Get prospects stats
-  const { data: prospectsData } = await supabase
-    .from("prospects")
-    .select("id, stage, estimated_value")
-    .in("startup_id", startupIds.length > 0 ? startupIds : ["none"]);
+  let prospects: { id: string; stage: string; estimated_value: number | null }[] = [];
+  if (startupIds.length > 0) {
+    const { data: prospectsData } = await supabase
+      .from("prospects")
+      .select("id, stage, estimated_value")
+      .in("startup_id", startupIds);
+    prospects = (prospectsData as typeof prospects) || [];
+  }
 
-  const prospects = prospectsData as { id: string; stage: string; estimated_value: number | null }[] | null;
-
-  const totalProspects = prospects?.length || 0;
-  const totalPipelineValue = prospects?.reduce((sum, p) => sum + (p.estimated_value || 0), 0) || 0;
-  const wonDeals = prospects?.filter(p => p.stage === "closed_won").length || 0;
+  const totalProspects = prospects.length;
+  const totalPipelineValue = prospects.reduce((sum, p) => sum + (p.estimated_value || 0), 0);
+  const wonDeals = prospects.filter(p => p.stage === "closed_won").length;
 
   // Group by stage
-  const prospectsByStage = prospects?.reduce((acc, p) => {
+  const prospectsByStage = prospects.reduce((acc, p) => {
     acc[p.stage] = (acc[p.stage] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>) || {};
+  }, {} as Record<string, number>);
 
   // Get recent activity
-  const { data: activitiesData } = await supabase
-    .from("activity_log")
-    .select("id, description, created_at, action_type")
-    .in("startup_id", startupIds.length > 0 ? startupIds : ["none"])
-    .order("created_at", { ascending: false })
-    .limit(10);
-
-  const activities = activitiesData as { id: string; description: string; created_at: string; action_type: string }[] | null;
+  let activities: { id: string; description: string; created_at: string; action_type: string }[] = [];
+  if (startupIds.length > 0) {
+    const { data: activitiesData } = await supabase
+      .from("activity_log")
+      .select("id, description, created_at, action_type")
+      .in("startup_id", startupIds)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    activities = (activitiesData as typeof activities) || [];
+  }
 
   // Get prospects with upcoming actions
   const today = new Date().toISOString().split("T")[0];
-  const { data: upcomingActionsData } = await supabase
-    .from("prospects")
-    .select("id, company_name, next_action, next_action_due")
-    .in("startup_id", startupIds.length > 0 ? startupIds : ["none"])
-    .gte("next_action_due", today)
-    .not("next_action", "is", null)
-    .order("next_action_due", { ascending: true })
-    .limit(5);
-
-  const upcomingActions = upcomingActionsData as { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] | null;
+  let upcomingActions: { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] = [];
+  if (startupIds.length > 0) {
+    const { data: upcomingActionsData } = await supabase
+      .from("prospects")
+      .select("id, company_name, next_action, next_action_due")
+      .in("startup_id", startupIds)
+      .gte("next_action_due", today)
+      .not("next_action", "is", null)
+      .order("next_action_due", { ascending: true })
+      .limit(5);
+    upcomingActions = (upcomingActionsData as typeof upcomingActions) || [];
+  }
 
   return (
     <div className="space-y-8">
