@@ -51,29 +51,29 @@ const stageLabels: Record<ProspectStage, string> = {
 };
 
 const stageColors: Record<ProspectStage, string> = {
-  new: "bg-gray-100 text-gray-700 hover:bg-gray-200",
-  intro_made: "bg-slate-100 text-slate-700 hover:bg-slate-200",
-  responded_yes: "bg-blue-100 text-blue-700 hover:bg-blue-200",
-  responded_no: "bg-orange-100 text-orange-700 hover:bg-orange-200",
-  meeting_scheduled: "bg-purple-100 text-purple-700 hover:bg-purple-200",
-  demo_completed_yes: "bg-cyan-100 text-cyan-700 hover:bg-cyan-200",
-  demo_completed_no: "bg-amber-100 text-amber-700 hover:bg-amber-200",
-  proposal_sent: "bg-indigo-100 text-indigo-700 hover:bg-indigo-200",
-  closed_won: "bg-green-100 text-green-700 hover:bg-green-200",
-  closed_lost: "bg-red-100 text-red-700 hover:bg-red-200",
+  new: "bg-gray-200 text-gray-800 hover:bg-gray-300",
+  intro_made: "bg-slate-200 text-slate-800 hover:bg-slate-300",
+  responded_yes: "bg-blue-200 text-blue-800 hover:bg-blue-300",
+  responded_no: "bg-orange-200 text-orange-800 hover:bg-orange-300",
+  meeting_scheduled: "bg-purple-200 text-purple-800 hover:bg-purple-300",
+  demo_completed_yes: "bg-cyan-200 text-cyan-800 hover:bg-cyan-300",
+  demo_completed_no: "bg-amber-200 text-amber-800 hover:bg-amber-300",
+  proposal_sent: "bg-indigo-200 text-indigo-800 hover:bg-indigo-300",
+  closed_won: "bg-green-200 text-green-800 hover:bg-green-300",
+  closed_lost: "bg-red-200 text-red-800 hover:bg-red-300",
 };
 
 const stageBadgeColors: Record<ProspectStage, string> = {
-  new: "bg-gray-100 text-gray-700",
-  intro_made: "bg-slate-100 text-slate-700",
-  responded_yes: "bg-blue-100 text-blue-700",
-  responded_no: "bg-orange-100 text-orange-700",
-  meeting_scheduled: "bg-purple-100 text-purple-700",
-  demo_completed_yes: "bg-cyan-100 text-cyan-700",
-  demo_completed_no: "bg-amber-100 text-amber-700",
-  proposal_sent: "bg-indigo-100 text-indigo-700",
-  closed_won: "bg-green-100 text-green-700",
-  closed_lost: "bg-red-100 text-red-700",
+  new: "bg-gray-200 text-gray-800",
+  intro_made: "bg-slate-200 text-slate-800",
+  responded_yes: "bg-blue-200 text-blue-800",
+  responded_no: "bg-orange-200 text-orange-800",
+  meeting_scheduled: "bg-purple-200 text-purple-800",
+  demo_completed_yes: "bg-cyan-200 text-cyan-800",
+  demo_completed_no: "bg-amber-200 text-amber-800",
+  proposal_sent: "bg-indigo-200 text-indigo-800",
+  closed_won: "bg-green-200 text-green-800",
+  closed_lost: "bg-red-200 text-red-800",
 };
 
 const functionLabels: Record<ProspectFunction, string> = {
