@@ -13,9 +13,11 @@ Social Glass is a platform that helps brands get insights from real live Gen Z c
 3. **VP/SVP Brand Marketing** - Responsible for brand strategy and consumer connection
 4. **Head of Gen Z Strategy** - Specifically focused on younger demographics
 5. **VP Digital Marketing** - Often owns social and digital consumer engagement
+6. **Creative Directors** - The creative lead at an agency responsible for brand
+7. **Head of Insights** - Either a brand or agency role responspible for cultural insights
 
 ### Target Company Criteria
-- **Size**: Enterprise (Fortune 1000) and growth-stage brands with $50M+ revenue
+- **Size**: Enterprise (Fortune 1000) and growth-stage brands with $25M+ revenue
 - **B2C Focus**: Must sell directly to consumers (not B2B)
 - **Marketing Spend**: Companies with significant marketing/advertising budgets
 
@@ -53,9 +55,9 @@ For each prospect, try to find:
 - [ ] Any public statements about Gen Z or youth marketing
 - [ ] LinkedIn profile URL (if publicly available)
 - [ ] Email pattern for the company (if discoverable)
+- (Don't include a prospect without having a name)
 
 ### Companies to EXCLUDE
-- Agencies (we want brands, not their agencies)
 - B2B-only companies
 - Companies with controversial reputations
 - Direct competitors to existing clients (check current prospects first)
