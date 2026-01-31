@@ -33,7 +33,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Search, Filter, X, ChevronRight, Sparkles } from "lucide-react";
+import { Plus, Search, Filter, X, ChevronRight, Sparkles, List, LayoutGrid } from "lucide-react";
+import { ProspectsBoard } from "./prospects-board";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Prospect, ProspectStage, ProspectFunction, ProspectSource } from "@/lib/types/database";
 
@@ -116,6 +117,7 @@ interface ProspectsListProps {
 
 export function ProspectsList({ initialProspects, startups, users, isAdmin }: ProspectsListProps) {
   const [prospects, setProspects] = useState(initialProspects);
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [functionFilter, setFunctionFilter] = useState<string>("all");
@@ -326,7 +328,33 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
           <h1 className="text-xl md:text-2xl font-semibold">Prospects</h1>
           <p className="text-sm text-muted-foreground">Manage your sales pipeline</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <div className="flex items-center gap-2">
+          {/* View Toggle */}
+          <div className="hidden md:flex items-center rounded-lg border bg-muted/50 p-1">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === "list"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <List className="h-4 w-4" />
+              List
+            </button>
+            <button
+              onClick={() => setViewMode("board")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === "board"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Board
+            </button>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
@@ -509,6 +537,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Search */}
@@ -652,8 +681,19 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
         )}
       </div>
 
+      {/* Desktop Board View */}
+      {viewMode === "board" && (
+        <div className="hidden md:block">
+          <ProspectsBoard
+            prospects={filteredProspects}
+            onStageChange={handleStageChange}
+            isAdmin={isAdmin}
+          />
+        </div>
+      )}
+
       {/* Desktop Table View */}
-      <div className="hidden md:block rounded-xl border bg-card overflow-x-auto">
+      <div className={`rounded-xl border bg-card overflow-x-auto ${viewMode === "list" ? "hidden md:block" : "hidden"}`}>
         <Table>
           <TableHeader>
             <TableRow>
