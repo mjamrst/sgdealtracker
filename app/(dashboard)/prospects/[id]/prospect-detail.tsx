@@ -119,6 +119,7 @@ export function ProspectDetail({ prospect: initialProspect, activities, users }:
         notes: prospect.notes,
         next_action: prospect.next_action,
         next_action_due: prospect.next_action_due,
+        meeting_date: prospect.meeting_date,
         owner_id: prospect.owner_id,
       })
       .eq("id", prospect.id);
@@ -341,6 +342,28 @@ export function ProspectDetail({ prospect: initialProspect, activities, users }:
                     setProspect((prev) => ({ ...prev, notes: e.target.value }))
                   }
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Meeting</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="meeting_date">Meeting Date</Label>
+                <Input
+                  id="meeting_date"
+                  type="date"
+                  value={prospect.meeting_date || ""}
+                  onChange={(e) =>
+                    setProspect((prev) => ({ ...prev, meeting_date: e.target.value }))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Set when a meeting is scheduled with this prospect
+                </p>
               </div>
             </CardContent>
           </Card>

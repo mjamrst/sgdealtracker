@@ -144,6 +144,7 @@ export interface Database {
           notes: string | null;
           next_action: string | null;
           next_action_due: string | null;
+          meeting_date: string | null;
           owner_id: string | null;
           source: ProspectSource;
           created_at: string;
@@ -162,6 +163,7 @@ export interface Database {
           notes?: string | null;
           next_action?: string | null;
           next_action_due?: string | null;
+          meeting_date?: string | null;
           owner_id?: string | null;
           source?: ProspectSource;
           created_at?: string;
@@ -180,6 +182,7 @@ export interface Database {
           notes?: string | null;
           next_action?: string | null;
           next_action_due?: string | null;
+          meeting_date?: string | null;
           owner_id?: string | null;
           source?: ProspectSource;
           created_at?: string;

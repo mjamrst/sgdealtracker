@@ -126,19 +126,18 @@ export default async function DashboardPage() {
     activities = (activitiesData as typeof activities) || [];
   }
 
-  // Get prospects with upcoming actions for current startup
+  // Get prospects with upcoming meetings for current startup
   const today = new Date().toISOString().split("T")[0];
-  let upcomingActions: { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] = [];
+  let upcomingMeetings: { id: string; company_name: string; contact_name: string | null; meeting_date: string | null }[] = [];
   if (startupId) {
-    const { data: upcomingActionsData } = await supabase
+    const { data: upcomingMeetingsData } = await supabase
       .from("prospects")
-      .select("id, company_name, next_action, next_action_due")
+      .select("id, company_name, contact_name, meeting_date")
       .eq("startup_id", startupId)
-      .gte("next_action_due", today)
-      .not("next_action", "is", null)
-      .order("next_action_due", { ascending: true })
-      .limit(5);
-    upcomingActions = (upcomingActionsData as typeof upcomingActions) || [];
+      .gte("meeting_date", today)
+      .not("meeting_date", "is", null)
+      .order("meeting_date", { ascending: true });
+    upcomingMeetings = (upcomingMeetingsData as typeof upcomingMeetings) || [];
   }
 
   return (
@@ -188,12 +187,12 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Upcoming Actions
+              Upcoming Meetings
             </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{upcomingActions?.length || 0}</div>
+            <div className="text-3xl font-bold">{upcomingMeetings?.length || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -230,26 +229,29 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
+        {/* Upcoming Events */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest updates across your pipeline</CardDescription>
+            <CardTitle>Upcoming Events</CardTitle>
+            <CardDescription>Scheduled meetings with prospects</CardDescription>
           </CardHeader>
           <CardContent>
-            {activities && activities.length > 0 ? (
+            {upcomingMeetings && upcomingMeetings.length > 0 ? (
               <div className="space-y-4">
-                {activities.map((activity) => (
-                  <div key={activity.id} className="flex gap-3 text-sm">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                {upcomingMeetings.map((meeting) => (
+                  <div key={meeting.id} className="flex gap-3 text-sm">
+                    <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-foreground">{activity.description}</p>
+                      <p className="text-foreground font-medium">{meeting.company_name}</p>
+                      {meeting.contact_name && (
+                        <p className="text-muted-foreground text-xs">{meeting.contact_name}</p>
+                      )}
                       <p className="text-muted-foreground text-xs mt-0.5">
-                        {new Date(activity.created_at).toLocaleDateString("en-US", {
+                        {new Date(meeting.meeting_date!).toLocaleDateString("en-US", {
+                          weekday: "short",
                           month: "short",
                           day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
+                          year: "numeric",
                         })}
                       </p>
                     </div>
@@ -257,32 +259,35 @@ export default async function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No recent activity</p>
+              <p className="text-sm text-muted-foreground">No upcoming meetings scheduled</p>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Upcoming Actions */}
-      {upcomingActions && upcomingActions.length > 0 && (
+      {/* Upcoming Meetings */}
+      {upcomingMeetings && upcomingMeetings.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Actions</CardTitle>
-            <CardDescription>Tasks due soon</CardDescription>
+            <CardTitle>Upcoming Meetings</CardTitle>
+            <CardDescription>Prospects with scheduled meetings</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {upcomingActions.map((prospect) => (
+              {upcomingMeetings.map((meeting) => (
                 <div
-                  key={prospect.id}
+                  key={meeting.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                 >
                   <div>
-                    <p className="font-medium">{prospect.company_name}</p>
-                    <p className="text-sm text-muted-foreground">{prospect.next_action}</p>
+                    <p className="font-medium">{meeting.company_name}</p>
+                    {meeting.contact_name && (
+                      <p className="text-sm text-muted-foreground">{meeting.contact_name}</p>
+                    )}
                   </div>
-                  <Badge variant="secondary">
-                    {new Date(prospect.next_action_due!).toLocaleDateString("en-US", {
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                    {new Date(meeting.meeting_date!).toLocaleDateString("en-US", {
+                      weekday: "short",
                       month: "short",
                       day: "numeric",
                     })}
