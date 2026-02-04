@@ -39,40 +39,25 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { Prospect, ProspectStage, ProspectFunction, ProspectSource } from "@/lib/types/database";
 
 const stageLabels: Record<ProspectStage, string> = {
-  new: "New",
-  intro_made: "Intro Made",
-  responded_yes: "Responded (Yes)",
-  responded_no: "Responded (No)",
-  meeting_scheduled: "Meeting Scheduled",
-  demo_completed_yes: "Demo Completed (Yes)",
-  demo_completed_no: "Demo Completed (No)",
-  proposal_sent: "Proposal Sent",
+  new_lead: "New Lead",
+  in_conversation: "In Conversation",
+  proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
   closed_lost: "Closed Lost",
 };
 
 const stageColors: Record<ProspectStage, string> = {
-  new: "bg-gray-200 text-gray-800 hover:bg-gray-300",
-  intro_made: "bg-slate-200 text-slate-800 hover:bg-slate-300",
-  responded_yes: "bg-blue-200 text-blue-800 hover:bg-blue-300",
-  responded_no: "bg-orange-200 text-orange-800 hover:bg-orange-300",
-  meeting_scheduled: "bg-purple-200 text-purple-800 hover:bg-purple-300",
-  demo_completed_yes: "bg-cyan-200 text-cyan-800 hover:bg-cyan-300",
-  demo_completed_no: "bg-amber-200 text-amber-800 hover:bg-amber-300",
-  proposal_sent: "bg-indigo-200 text-indigo-800 hover:bg-indigo-300",
+  new_lead: "bg-gray-200 text-gray-800 hover:bg-gray-300",
+  in_conversation: "bg-blue-200 text-blue-800 hover:bg-blue-300",
+  proposal_negotiation: "bg-purple-200 text-purple-800 hover:bg-purple-300",
   closed_won: "bg-green-200 text-green-800 hover:bg-green-300",
   closed_lost: "bg-red-200 text-red-800 hover:bg-red-300",
 };
 
 const stageBadgeColors: Record<ProspectStage, string> = {
-  new: "bg-gray-200 text-gray-800",
-  intro_made: "bg-slate-200 text-slate-800",
-  responded_yes: "bg-blue-200 text-blue-800",
-  responded_no: "bg-orange-200 text-orange-800",
-  meeting_scheduled: "bg-purple-200 text-purple-800",
-  demo_completed_yes: "bg-cyan-200 text-cyan-800",
-  demo_completed_no: "bg-amber-200 text-amber-800",
-  proposal_sent: "bg-indigo-200 text-indigo-800",
+  new_lead: "bg-gray-200 text-gray-800",
+  in_conversation: "bg-blue-200 text-blue-800",
+  proposal_negotiation: "bg-purple-200 text-purple-800",
   closed_won: "bg-green-200 text-green-800",
   closed_lost: "bg-red-200 text-red-800",
 };

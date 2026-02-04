@@ -5,53 +5,33 @@ import { Badge } from "@/components/ui/badge";
 import { Target, DollarSign, TrendingUp, Clock } from "lucide-react";
 
 const stageLabels: Record<string, string> = {
-  new: "New",
-  intro_made: "Intro Made",
-  responded_yes: "Responded (Yes)",
-  responded_no: "Responded (No)",
-  meeting_scheduled: "Meeting Scheduled",
-  demo_completed_yes: "Demo Completed (Yes)",
-  demo_completed_no: "Demo Completed (No)",
-  proposal_sent: "Proposal Sent",
+  new_lead: "New Lead",
+  in_conversation: "In Conversation",
+  proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
   closed_lost: "Closed Lost",
 };
 
 const stageColors: Record<string, string> = {
-  new: "bg-gray-100 text-gray-700",
-  intro_made: "bg-slate-100 text-slate-700",
-  responded_yes: "bg-blue-100 text-blue-700",
-  responded_no: "bg-orange-100 text-orange-700",
-  meeting_scheduled: "bg-purple-100 text-purple-700",
-  demo_completed_yes: "bg-cyan-100 text-cyan-700",
-  demo_completed_no: "bg-amber-100 text-amber-700",
-  proposal_sent: "bg-indigo-100 text-indigo-700",
+  new_lead: "bg-gray-100 text-gray-700",
+  in_conversation: "bg-blue-100 text-blue-700",
+  proposal_negotiation: "bg-purple-100 text-purple-700",
   closed_won: "bg-green-100 text-green-700",
   closed_lost: "bg-red-100 text-red-700",
 };
 
 const stageBarColors: Record<string, string> = {
-  new: "bg-gray-400",
-  intro_made: "bg-slate-400",
-  responded_yes: "bg-blue-500",
-  responded_no: "bg-orange-400",
-  meeting_scheduled: "bg-purple-500",
-  demo_completed_yes: "bg-cyan-500",
-  demo_completed_no: "bg-amber-500",
-  proposal_sent: "bg-indigo-500",
+  new_lead: "bg-gray-400",
+  in_conversation: "bg-blue-500",
+  proposal_negotiation: "bg-purple-500",
   closed_won: "bg-green-500",
   closed_lost: "bg-red-400",
 };
 
 const stageDotColors: Record<string, string> = {
-  new: "bg-gray-400",
-  intro_made: "bg-slate-400",
-  responded_yes: "bg-blue-500",
-  responded_no: "bg-orange-400",
-  meeting_scheduled: "bg-purple-500",
-  demo_completed_yes: "bg-cyan-500",
-  demo_completed_no: "bg-amber-500",
-  proposal_sent: "bg-indigo-500",
+  new_lead: "bg-gray-400",
+  in_conversation: "bg-blue-500",
+  proposal_negotiation: "bg-purple-500",
   closed_won: "bg-green-500",
   closed_lost: "bg-red-400",
 };

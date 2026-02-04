@@ -10,14 +10,9 @@ export type UserRole = "admin" | "founder";
 export type MemberRole = "founder" | "team";
 export type ProspectFunction = "marketing" | "insights" | "partnerships" | "other";
 export type ProspectStage =
-  | "new"
-  | "intro_made"
-  | "responded_yes"
-  | "responded_no"
-  | "meeting_scheduled"
-  | "demo_completed_yes"
-  | "demo_completed_no"
-  | "proposal_sent"
+  | "new_lead"
+  | "in_conversation"
+  | "proposal_negotiation"
   | "closed_won"
   | "closed_lost";
 export type MaterialType = "pitch_deck" | "trend_report" | "other";
