@@ -30,10 +30,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Search, Filter, X, ChevronRight, Sparkles, List, LayoutGrid } from "lucide-react";
+import { Plus, Search, Filter, X, ChevronRight, Sparkles, List, LayoutGrid, Trash2 } from "lucide-react";
 import { ProspectsBoard } from "./prospects-board";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Prospect, ProspectStage, ProspectFunction, ProspectSource } from "@/lib/types/database";
@@ -249,6 +260,27 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
 
   const clearSelection = () => {
     setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkUpdating(true);
+
+    const { error } = await supabase
+      .from("prospects")
+      .delete()
+      .in("id", Array.from(selectedIds));
+
+    if (error) {
+      toast.error("Failed to delete prospects");
+      setBulkUpdating(false);
+      return;
+    }
+
+    setProspects((prev) => prev.filter((p) => !selectedIds.has(p.id)));
+    toast.success(`Deleted ${selectedIds.size} prospect${selectedIds.size > 1 ? "s" : ""}`);
+    setSelectedIds(new Set());
+    setBulkUpdating(false);
   };
 
   const handleCreateProspect = async (e: React.FormEvent) => {
@@ -604,6 +636,35 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
               </SelectContent>
             </Select>
           </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={bulkUpdating}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete {selectedIds.size} prospect{selectedIds.size > 1 ? "s" : ""}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the selected prospect{selectedIds.size > 1 ? "s" : ""} and all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleBulkDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {bulkUpdating ? "Deleting..." : "Delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button
             variant="ghost"
             size="sm"
