@@ -16,6 +16,7 @@ export type ProspectStage =
   | "closed_won"
   | "closed_lost";
 export type MaterialType = "pitch_deck" | "trend_report" | "other";
+export type ScriptChannel = "text" | "email" | "linkedin" | "social_media";
 export type ProspectSource = "manual" | "ai_generated";
 export type ActivityType =
   | "stage_change"
@@ -306,6 +307,35 @@ export interface Database {
           created_at?: string;
         };
       };
+      sales_scripts: {
+        Row: {
+          id: string;
+          startup_id: string;
+          title: string;
+          content: string;
+          channel: ScriptChannel;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          startup_id: string;
+          title: string;
+          content: string;
+          channel: ScriptChannel;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          startup_id?: string;
+          title?: string;
+          content?: string;
+          channel?: ScriptChannel;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -321,6 +351,7 @@ export interface Database {
       prospect_source: ProspectSource;
       material_type: MaterialType;
       activity_type: ActivityType;
+      script_channel: ScriptChannel;
     };
   };
 }
@@ -335,3 +366,4 @@ export type Material = Database["public"]["Tables"]["materials"]["Row"];
 export type MaterialVersion = Database["public"]["Tables"]["material_versions"]["Row"];
 export type ActivityLog = Database["public"]["Tables"]["activity_log"]["Row"];
 export type Invite = Database["public"]["Tables"]["invites"]["Row"];
+export type SalesScript = Database["public"]["Tables"]["sales_scripts"]["Row"];

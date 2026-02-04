@@ -23,6 +23,7 @@ import {
   Building2,
   ChevronDown,
   Check,
+  FileText,
 } from "lucide-react";
 import { setCurrentStartup } from "@/app/actions/startup";
 
@@ -36,6 +37,7 @@ const navigation = [
   { name: "Prospects", href: "/prospects", icon: Target },
   { name: "Products", href: "/products", icon: Package },
   { name: "Materials", href: "/materials", icon: FolderOpen },
+  { name: "Sales Scripts", href: "/sales-scripts", icon: FileText },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
