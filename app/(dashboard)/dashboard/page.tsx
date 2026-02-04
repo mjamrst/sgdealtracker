@@ -120,6 +120,19 @@ export default async function DashboardPage() {
     upcomingMeetings = (upcomingMeetingsData as typeof upcomingMeetings) || [];
   }
 
+  // Get prospects with upcoming next steps/actions for current startup
+  let nextSteps: { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] = [];
+  if (startupId) {
+    const { data: nextStepsData } = await supabase
+      .from("prospects")
+      .select("id, company_name, next_action, next_action_due")
+      .eq("startup_id", startupId)
+      .gte("next_action_due", today)
+      .not("next_action", "is", null)
+      .order("next_action_due", { ascending: true });
+    nextSteps = (nextStepsData as typeof nextSteps) || [];
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -245,28 +258,26 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Upcoming Meetings */}
-      {upcomingMeetings && upcomingMeetings.length > 0 && (
+      {/* Next Steps */}
+      {nextSteps && nextSteps.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Meetings</CardTitle>
-            <CardDescription>Prospects with scheduled meetings</CardDescription>
+            <CardTitle>Next Steps</CardTitle>
+            <CardDescription>Upcoming actions for your prospects</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {upcomingMeetings.map((meeting) => (
+              {nextSteps.map((step) => (
                 <div
-                  key={meeting.id}
+                  key={step.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                 >
                   <div>
-                    <p className="font-medium">{meeting.company_name}</p>
-                    {meeting.contact_name && (
-                      <p className="text-sm text-muted-foreground">{meeting.contact_name}</p>
-                    )}
+                    <p className="font-medium">{step.company_name}</p>
+                    <p className="text-sm text-muted-foreground">{step.next_action}</p>
                   </div>
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                    {new Date(meeting.meeting_date!).toLocaleDateString("en-US", {
+                  <Badge variant="secondary">
+                    {new Date(step.next_action_due!).toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
                       day: "numeric",
