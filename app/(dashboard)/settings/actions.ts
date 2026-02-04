@@ -16,19 +16,23 @@ export async function createUserWithPassword(params: CreateUserParams) {
   // Verify the requester is an admin
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  console.log("[createUserWithPassword] Auth user:", user?.id, user?.email, "Error:", userError?.message);
+
   if (!user) {
     return { error: "Unauthorized - not authenticated" };
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .single();
 
+  console.log("[createUserWithPassword] Profile lookup for", user.id, "- Role:", profile?.role, "Error:", profileError?.message);
+
   if (profile?.role !== "admin") {
-    return { error: "Unauthorized - admin only" };
+    return { error: `Unauthorized - admin only (role: ${profile?.role}, profileError: ${profileError?.message})` };
   }
 
   const adminClient = createAdminClient();
