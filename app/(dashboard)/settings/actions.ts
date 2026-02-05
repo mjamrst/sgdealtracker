@@ -15,9 +15,13 @@ interface CreateUserParams {
 export async function createUserWithPassword(params: CreateUserParams) {
   // Verify the requester is an admin
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
+    .eq("id", user.id)
     .single();
 
   if (profile?.role !== "admin") {
@@ -68,11 +72,14 @@ export async function createUserWithPassword(params: CreateUserParams) {
 
 export async function getTeamMembers() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated", members: [] };
 
   // Verify admin
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
+    .eq("id", user.id)
     .single();
 
   if (profile?.role !== "admin") {
