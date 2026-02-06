@@ -59,5 +59,44 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Auto-set current_startup_id cookie if missing for authenticated users
+  if (user && !request.cookies.get("current_startup_id") && !isAuthPage) {
+    // Check user's profile role
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    let startupId: string | null = null;
+
+    if (profile?.role === "admin") {
+      // Admins: pick the first startup
+      const { data: startups } = await supabase
+        .from("startups")
+        .select("id")
+        .order("name")
+        .limit(1);
+      startupId = startups?.[0]?.id || null;
+    } else {
+      // Regular users: pick from their memberships
+      const { data: memberships } = await supabase
+        .from("startup_members")
+        .select("startup_id")
+        .eq("user_id", user.id)
+        .limit(1);
+      startupId = memberships?.[0]?.startup_id || null;
+    }
+
+    if (startupId) {
+      supabaseResponse.cookies.set("current_startup_id", startupId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 365,
+      });
+    }
+  }
+
   return supabaseResponse;
 }
