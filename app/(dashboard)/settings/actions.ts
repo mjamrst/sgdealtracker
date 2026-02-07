@@ -2,14 +2,11 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { MemberRole } from "@/lib/types/database";
-
 interface CreateUserParams {
   email: string;
   password: string;
   full_name: string;
   startup_id: string;
-  role: MemberRole;
 }
 
 export async function createUserWithPassword(params: CreateUserParams) {
@@ -60,7 +57,6 @@ export async function createUserWithPassword(params: CreateUserParams) {
     .insert({
       startup_id: params.startup_id,
       user_id: authData.user.id,
-      role: params.role,
     });
 
   if (memberError) {
@@ -100,8 +96,7 @@ export async function getTeamMembers() {
         startup:startups (
           id,
           name
-        ),
-        role
+        )
       )
     `)
     .neq("role", "admin")

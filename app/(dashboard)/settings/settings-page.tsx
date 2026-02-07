@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Save, Plus, Send, Copy, Trash2, Building2, Users, Mail, UserPlus, Clock } from "lucide-react";
-import type { Profile, MemberRole } from "@/lib/types/database";
+import type { Profile } from "@/lib/types/database";
 import { createUserWithPassword } from "./actions";
 
 interface SettingsPageProps {
@@ -66,7 +66,7 @@ interface SettingsPageProps {
     full_name: string | null;
     last_sign_in_at: string | null;
     created_at: string;
-    startup_members: { startup: { id: string; name: string } | null; role: string }[];
+    startup_members: { startup: { id: string; name: string } | null }[];
   }[];
 }
 
@@ -81,7 +81,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
   const [inviteData, setInviteData] = useState({
     email: "",
     startup_id: startups[0]?.id || "",
-    role: "founder" as MemberRole,
   });
   const [startupData, setStartupData] = useState({
     name: "",
@@ -96,7 +95,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
     password: "",
     full_name: "",
     startup_id: startups[0]?.id || "",
-    role: "founder" as MemberRole,
   });
   const router = useRouter();
   const supabase = createClient();
@@ -132,7 +130,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
       .insert({
         email: inviteData.email,
         startup_id: inviteData.startup_id,
-        role: inviteData.role,
         invited_by: user.id,
       })
       .select("id, email, token, expires_at, startup:startups(name)")
@@ -158,7 +155,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
     setInviteData({
       email: "",
       startup_id: startups[0]?.id || "",
-      role: "founder",
     });
     toast.success("Invite created");
   };
@@ -214,7 +210,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
       password: newUserData.password,
       full_name: newUserData.full_name,
       startup_id: newUserData.startup_id,
-      role: newUserData.role,
     });
 
     if (result.error) {
@@ -229,7 +224,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
       password: "",
       full_name: "",
       startup_id: startups[0]?.id || "",
-      role: "founder",
     });
     setCreatingUser(false);
     toast.success("User created successfully");
@@ -273,7 +267,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
               </div>
               <div className="space-y-2">
                 <Label>Role</Label>
-                <Input value={profile?.role === "admin" ? "Admin" : "Founder"} disabled className="bg-muted" />
+                <Input value={profile?.role === "admin" ? "Admin" : "Member"} disabled className="bg-muted" />
               </div>
               <Button onClick={handleSaveProfile} disabled={saving}>
                 <Save className="h-4 w-4 mr-2" />
@@ -339,23 +333,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                                   {startup.name}
                                 </SelectItem>
                               ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="invite-role">Role</Label>
-                          <Select
-                            value={inviteData.role}
-                            onValueChange={(value: MemberRole) =>
-                              setInviteData((prev) => ({ ...prev, role: value }))
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="founder">Founder</SelectItem>
-                              <SelectItem value="team">Team Member</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -531,23 +508,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                             </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="user-role">Role</Label>
-                          <Select
-                            value={newUserData.role}
-                            onValueChange={(value: MemberRole) =>
-                              setNewUserData((prev) => ({ ...prev, role: value }))
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="founder">Founder</SelectItem>
-                              <SelectItem value="team">Team Member</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
                         <div className="flex justify-end gap-2">
                           <Button
                             type="button"
@@ -577,7 +537,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Startup</TableHead>
-                          <TableHead>Role</TableHead>
                           <TableHead>Last Sign In</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -594,11 +553,6 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                                     .map((sm) => sm.startup?.name)
                                     .filter(Boolean)
                                     .join(", ")
-                                : "-"}
-                            </TableCell>
-                            <TableCell className="capitalize">
-                              {member.startup_members.length > 0
-                                ? member.startup_members[0]?.role || "-"
                                 : "-"}
                             </TableCell>
                             <TableCell>

@@ -60,7 +60,7 @@ export default async function Settings() {
     full_name: string | null;
     last_sign_in_at: string | null;
     created_at: string;
-    startup_members: { startup: { id: string; name: string } | null; role: string }[];
+    startup_members: { startup: { id: string; name: string } | null }[];
   }[] = [];
   if (isAdmin) {
     const { data } = await supabase
@@ -72,8 +72,7 @@ export default async function Settings() {
         last_sign_in_at,
         created_at,
         startup_members (
-          startup:startups (id, name),
-          role
+          startup:startups (id, name)
         )
       `)
       .neq("role", "admin")
