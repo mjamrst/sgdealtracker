@@ -27,11 +27,32 @@ export default async function ProspectPage({ params }: PageProps) {
     .eq("prospect_id", id)
     .order("created_at", { ascending: false });
 
-  // Get all users for owner dropdown
-  const { data: users } = await supabase
-    .from("profiles")
-    .select("id, full_name, email")
-    .order("full_name", { ascending: true });
+  // Get users for owner dropdown: startup members + admins
+  let users: { id: string; full_name: string | null; email: string }[] = [];
+  if (prospect.startup_id) {
+    const { data: members } = await supabase
+      .from("startup_members")
+      .select("user_id")
+      .eq("startup_id", prospect.startup_id);
+    const memberIds = (members || []).map((m) => m.user_id);
+
+    const { data: admins } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin");
+    const adminIds = (admins || []).map((a) => a.id);
+
+    const allIds = [...new Set([...memberIds, ...adminIds])];
+
+    if (allIds.length > 0) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", allIds)
+        .order("full_name", { ascending: true });
+      users = data || [];
+    }
+  }
 
   return (
     <ProspectDetail

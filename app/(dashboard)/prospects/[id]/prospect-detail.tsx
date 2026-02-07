@@ -121,13 +121,21 @@ export function ProspectDetail({ prospect: initialProspect, activities, users }:
     }
 
     // Log activity
-    await supabase.from("activity_log").insert({
-      startup_id: prospect.startup_id,
-      prospect_id: prospect.id,
-      user_id: (await supabase.auth.getUser()).data.user?.id || "",
-      action_type: "prospect_updated",
-      description: `Updated ${prospect.company_name}`,
-    });
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { error: logError } = await supabase.from("activity_log").insert({
+        startup_id: prospect.startup_id,
+        prospect_id: prospect.id,
+        user_id: currentUser.id,
+        action_type: "prospect_updated",
+        description: `Updated ${prospect.company_name}`,
+      });
+      if (logError) {
+        console.warn("Failed to log activity:", logError.message);
+      }
+    } else {
+      console.warn("Activity log skipped: user not authenticated");
+    }
 
     toast.success("Changes saved");
     setSaving(false);
@@ -300,13 +308,14 @@ export function ProspectDetail({ prospect: initialProspect, activities, users }:
                   <Label htmlFor="owner">Owner</Label>
                   <Select
                     value={prospect.owner_id || "unassigned"}
-                    onValueChange={(value) =>
+                    onValueChange={(value) => {
+                      const foundUser = value === "unassigned" ? null : users.find(u => u.id === value);
                       setProspect((prev) => ({
                         ...prev,
                         owner_id: value === "unassigned" ? null : value,
-                        owner: value === "unassigned" ? null : users.find(u => u.id === value) ? { id: value, full_name: users.find(u => u.id === value)?.full_name || null } : null
-                      }))
-                    }
+                        owner: foundUser ? { id: foundUser.id, full_name: foundUser.full_name } : null
+                      }));
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Unassigned" />

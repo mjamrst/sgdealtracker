@@ -311,13 +311,21 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
     }
 
     // Log activity
-    await supabase.from("activity_log").insert({
-      startup_id: newProspect.startup_id,
-      prospect_id: data.id,
-      user_id: (await supabase.auth.getUser()).data.user?.id || "",
-      action_type: "prospect_created",
-      description: `Created prospect ${newProspect.company_name}`,
-    });
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { error: logError } = await supabase.from("activity_log").insert({
+        startup_id: newProspect.startup_id,
+        prospect_id: data.id,
+        user_id: currentUser.id,
+        action_type: "prospect_created",
+        description: `Created prospect ${newProspect.company_name}`,
+      });
+      if (logError) {
+        console.warn("Failed to log activity:", logError.message);
+      }
+    } else {
+      console.warn("Activity log skipped: user not authenticated");
+    }
 
     setProspects((prev) => [data, ...prev]);
     setIsDialogOpen(false);

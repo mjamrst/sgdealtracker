@@ -124,8 +124,13 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
 
       if (uploadError) throw uploadError;
 
-      // Create version record
+      // Get current user for version record and activity log
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Not authenticated");
+        return;
+      }
+
       const { data: version, error: versionError } = await supabase
         .from("material_versions")
         .insert({
@@ -133,7 +138,7 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
           version_number: 1,
           file_path: filePath,
           file_name: selectedFile.name,
-          uploaded_by: user?.id || "",
+          uploaded_by: user.id,
         })
         .select()
         .single();
@@ -141,12 +146,15 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
       if (versionError) throw versionError;
 
       // Log activity
-      await supabase.from("activity_log").insert({
+      const { error: logError } = await supabase.from("activity_log").insert({
         startup_id: formData.startup_id,
-        user_id: user?.id || "",
+        user_id: user.id,
         action_type: "material_uploaded",
         description: `Uploaded ${formData.name} (v1)`,
       });
+      if (logError) {
+        console.warn("Failed to log activity:", logError.message);
+      }
 
       setMaterials((prev) => [{ ...material, versions: [version] }, ...prev]);
       setIsDialogOpen(false);
@@ -182,6 +190,11 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
       if (uploadError) throw uploadError;
 
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Not authenticated");
+        return;
+      }
+
       const { data: version, error: versionError } = await supabase
         .from("material_versions")
         .insert({
@@ -189,7 +202,7 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
           version_number: nextVersion,
           file_path: filePath,
           file_name: selectedFile.name,
-          uploaded_by: user?.id || "",
+          uploaded_by: user.id,
         })
         .select()
         .single();
@@ -197,12 +210,15 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
       if (versionError) throw versionError;
 
       // Log activity
-      await supabase.from("activity_log").insert({
+      const { error: logError } = await supabase.from("activity_log").insert({
         startup_id: uploadingMaterial.startup_id,
-        user_id: user?.id || "",
+        user_id: user.id,
         action_type: "material_uploaded",
         description: `Uploaded ${uploadingMaterial.name} (v${nextVersion})`,
       });
+      if (logError) {
+        console.warn("Failed to log activity:", logError.message);
+      }
 
       setMaterials((prev) =>
         prev.map((m) =>

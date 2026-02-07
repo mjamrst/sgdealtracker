@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { acceptInvite } from "../actions";
 
 interface InviteData {
   email: string;
@@ -59,37 +60,22 @@ export default function InvitePage({ params }: { params: Promise<{ token: string
 
     setSubmitting(true);
 
-    // Sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const result = await acceptInvite({ token, password, fullName });
+
+    if (result.error) {
+      toast.error(result.error);
+      setSubmitting(false);
+      return;
+    }
+
+    // Sign in the newly created user
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email: invite.email,
       password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
     });
 
-    if (authError) {
-      toast.error(authError.message);
-      setSubmitting(false);
-      return;
-    }
-
-    // Mark invite as accepted (the trigger will handle adding to startup_members)
-    const { error: updateError } = await (supabase
-      .from("invites") as ReturnType<typeof supabase.from>)
-      .update({ accepted_at: new Date().toISOString() })
-      .eq("token", token);
-
-    if (updateError) {
-      toast.error("Failed to accept invite");
-      setSubmitting(false);
-      return;
-    }
-
-    if (authData.user && !authData.session) {
-      toast.success("Account created! Check your email to confirm.");
+    if (signInError) {
+      toast.success("Account created! Please log in.");
       router.push("/login");
     } else {
       toast.success("Welcome to " + invite.startup.name + "!");
