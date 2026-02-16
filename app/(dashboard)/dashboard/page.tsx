@@ -9,7 +9,6 @@ const stageLabels: Record<string, string> = {
   in_conversation: "In Conversation",
   proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
-  closed_lost: "Closed Lost",
 };
 
 const stageColors: Record<string, string> = {
@@ -17,7 +16,6 @@ const stageColors: Record<string, string> = {
   in_conversation: "bg-blue-100 text-blue-700",
   proposal_negotiation: "bg-purple-100 text-purple-700",
   closed_won: "bg-green-100 text-green-700",
-  closed_lost: "bg-red-100 text-red-700",
 };
 
 const stageBarColors: Record<string, string> = {
@@ -25,7 +23,6 @@ const stageBarColors: Record<string, string> = {
   in_conversation: "bg-blue-500",
   proposal_negotiation: "bg-purple-500",
   closed_won: "bg-green-500",
-  closed_lost: "bg-red-400",
 };
 
 const stageDotColors: Record<string, string> = {
@@ -33,7 +30,6 @@ const stageDotColors: Record<string, string> = {
   in_conversation: "bg-blue-500",
   proposal_negotiation: "bg-purple-500",
   closed_won: "bg-green-500",
-  closed_lost: "bg-red-400",
 };
 
 export default async function DashboardPage() {
@@ -80,7 +76,8 @@ export default async function DashboardPage() {
     const { data: prospectsData } = await supabase
       .from("prospects")
       .select("id, stage, estimated_value")
-      .eq("startup_id", startupId);
+      .eq("startup_id", startupId)
+      .neq("stage", "closed_lost");
     prospects = (prospectsData as typeof prospects) || [];
   }
 
@@ -114,6 +111,7 @@ export default async function DashboardPage() {
       .from("prospects")
       .select("id, company_name, contact_name, meeting_date")
       .eq("startup_id", startupId)
+      .neq("stage", "closed_lost")
       .gte("meeting_date", today)
       .not("meeting_date", "is", null)
       .order("meeting_date", { ascending: true });
@@ -132,6 +130,7 @@ export default async function DashboardPage() {
       .from("prospects")
       .select("id", { count: "exact", head: true })
       .eq("startup_id", startupId)
+      .neq("stage", "closed_lost")
       .gte("meeting_date", monthStart)
       .lte("meeting_date", monthEnd)
       .not("meeting_date", "is", null);
@@ -147,6 +146,7 @@ export default async function DashboardPage() {
       .from("prospects")
       .select("id, company_name, next_action, next_action_due")
       .eq("startup_id", startupId)
+      .neq("stage", "closed_lost")
       .gte("next_action_due", today)
       .not("next_action", "is", null)
       .order("next_action_due", { ascending: true });

@@ -49,28 +49,25 @@ import { ProspectsBoard } from "./prospects-board";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Prospect, ProspectStage, ProspectFunction, ProspectSource } from "@/lib/types/database";
 
-const stageLabels: Record<ProspectStage, string> = {
+const stageLabels: Record<string, string> = {
   new_lead: "New Lead",
   in_conversation: "In Conversation",
   proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
-  closed_lost: "Closed Lost",
 };
 
-const stageColors: Record<ProspectStage, string> = {
+const stageColors: Record<string, string> = {
   new_lead: "bg-gray-200 text-gray-800 hover:bg-gray-300",
   in_conversation: "bg-blue-200 text-blue-800 hover:bg-blue-300",
   proposal_negotiation: "bg-purple-200 text-purple-800 hover:bg-purple-300",
   closed_won: "bg-green-200 text-green-800 hover:bg-green-300",
-  closed_lost: "bg-red-200 text-red-800 hover:bg-red-300",
 };
 
-const stageBadgeColors: Record<ProspectStage, string> = {
+const stageBadgeColors: Record<string, string> = {
   new_lead: "bg-gray-200 text-gray-800",
   in_conversation: "bg-blue-200 text-blue-800",
   proposal_negotiation: "bg-purple-200 text-purple-800",
   closed_won: "bg-green-200 text-green-800",
-  closed_lost: "bg-red-200 text-red-800",
 };
 
 const functionLabels: Record<ProspectFunction, string> = {

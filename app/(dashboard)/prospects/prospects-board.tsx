@@ -31,15 +31,11 @@ const boardColumns = [
     headerColor: "bg-purple-200",
   },
   {
-    id: "closed",
-    title: "Closed",
-    stages: ["closed_won", "closed_lost"] as ProspectStage[],
-    color: "bg-gray-50 border-gray-200",
-    headerColor: "bg-gray-100",
-    subSections: [
-      { stage: "closed_won" as ProspectStage, label: "Won", color: "bg-green-100 border-green-300" },
-      { stage: "closed_lost" as ProspectStage, label: "Lost", color: "bg-red-100 border-red-300" },
-    ],
+    id: "closed_won",
+    title: "Closed Won",
+    stages: ["closed_won"] as ProspectStage[],
+    color: "bg-green-100 border-green-300",
+    headerColor: "bg-green-200",
   },
 ];
 
@@ -57,9 +53,7 @@ export function ProspectsBoard({ prospects, onStageChange, isAdmin }: ProspectsB
     return prospects.filter((p) => p.stage === stage);
   };
 
-  const getProspectsForStages = (stages: ProspectStage[]) => {
-    return prospects.filter((p) => stages.includes(p.stage));
-  };
+
 
   const handleDragStart = (e: React.DragEvent, prospectId: string) => {
     setDraggedProspect(prospectId);
@@ -152,52 +146,23 @@ export function ProspectsBoard({ prospects, onStageChange, isAdmin }: ProspectsB
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-sm">{column.title}</h3>
                 <span className="text-xs text-muted-foreground bg-white/50 px-2 py-0.5 rounded-full">
-                  {getProspectsForStages(column.stages).length}
+                  {getProspectsForStage(column.stages[0]).length}
                 </span>
               </div>
             </div>
 
             {/* Column Content */}
             <div className="flex-1 p-2">
-              {column.subSections ? (
-                // Render subsections
-                <div className="space-y-3">
-                  {column.subSections.map((sub) => (
-                    <div key={sub.stage} className={`rounded-lg border ${sub.color}`}>
-                      <div className="px-2 py-1 border-b bg-white/30">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium">{sub.label}</span>
-                          <span className="text-[10px] text-muted-foreground">
-                            {getProspectsForStage(sub.stage).length}
-                          </span>
-                        </div>
-                      </div>
-                      <DropZone stage={sub.stage} className="space-y-2">
-                        {getProspectsForStage(sub.stage).map((prospect) => (
-                          <ProspectCard key={prospect.id} prospect={prospect} />
-                        ))}
-                        {getProspectsForStage(sub.stage).length === 0 && (
-                          <p className="text-xs text-muted-foreground text-center py-4">
-                            Drop here
-                          </p>
-                        )}
-                      </DropZone>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                // Render single stage column
-                <DropZone stage={column.stages[0]} className="space-y-2">
-                  {getProspectsForStage(column.stages[0]).map((prospect) => (
-                    <ProspectCard key={prospect.id} prospect={prospect} />
-                  ))}
-                  {getProspectsForStage(column.stages[0]).length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-8">
-                      No prospects
-                    </p>
-                  )}
-                </DropZone>
-              )}
+              <DropZone stage={column.stages[0]} className="space-y-2">
+                {getProspectsForStage(column.stages[0]).map((prospect) => (
+                  <ProspectCard key={prospect.id} prospect={prospect} />
+                ))}
+                {getProspectsForStage(column.stages[0]).length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-8">
+                    No prospects
+                  </p>
+                )}
+              </DropZone>
             </div>
           </div>
         ))}

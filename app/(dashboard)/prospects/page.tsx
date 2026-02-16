@@ -44,6 +44,7 @@ export default async function ProspectsPage() {
       .from("prospects")
       .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
       .eq("startup_id", startupId)
+      .neq("stage", "closed_lost")
       .order("updated_at", { ascending: false });
     prospects = data || [];
   }
