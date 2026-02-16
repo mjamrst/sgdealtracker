@@ -61,6 +61,7 @@ const stageLabels: Record<string, string> = {
   in_conversation: "In Conversation",
   proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
+  closed_lost: "Closed Lost",
 };
 
 const stageColors: Record<string, string> = {
@@ -68,6 +69,7 @@ const stageColors: Record<string, string> = {
   in_conversation: "bg-blue-200 text-blue-800 hover:bg-blue-300",
   proposal_negotiation: "bg-purple-200 text-purple-800 hover:bg-purple-300",
   closed_won: "bg-green-200 text-green-800 hover:bg-green-300",
+  closed_lost: "bg-red-200 text-red-800 hover:bg-red-300",
 };
 
 const stageBadgeColors: Record<string, string> = {
