@@ -11,6 +11,7 @@ export type MemberRole = "founder" | "team";
 export type ProspectFunction = "marketing" | "insights" | "partnerships" | "other";
 export type ProspectStage =
   | "new_lead"
+  | "contacted"
   | "in_conversation"
   | "proposal_negotiation"
   | "closed_won"

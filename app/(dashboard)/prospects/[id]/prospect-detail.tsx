@@ -35,6 +35,7 @@ import type { Prospect, ProspectStage, ProspectFunction, ActivityLog, Profile } 
 
 const stageLabels: Record<ProspectStage, string> = {
   new_lead: "New Lead",
+  contacted: "Contacted",
   in_conversation: "In Conversation",
   proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
@@ -43,6 +44,7 @@ const stageLabels: Record<ProspectStage, string> = {
 
 const stageColors: Record<ProspectStage, string> = {
   new_lead: "bg-gray-100 text-gray-700",
+  contacted: "bg-teal-100 text-teal-700",
   in_conversation: "bg-blue-100 text-blue-700",
   proposal_negotiation: "bg-purple-100 text-purple-700",
   closed_won: "bg-green-100 text-green-700",

@@ -53,11 +53,13 @@ const stageOrder: string[] = [
   "closed_won",
   "proposal_negotiation",
   "in_conversation",
+  "contacted",
   "new_lead",
 ];
 
 const stageLabels: Record<string, string> = {
   new_lead: "New Lead",
+  contacted: "Contacted",
   in_conversation: "In Conversation",
   proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
@@ -66,6 +68,7 @@ const stageLabels: Record<string, string> = {
 
 const stageColors: Record<string, string> = {
   new_lead: "bg-gray-200 text-gray-800 hover:bg-gray-300",
+  contacted: "bg-teal-200 text-teal-800 hover:bg-teal-300",
   in_conversation: "bg-blue-200 text-blue-800 hover:bg-blue-300",
   proposal_negotiation: "bg-purple-200 text-purple-800 hover:bg-purple-300",
   closed_won: "bg-green-200 text-green-800 hover:bg-green-300",
@@ -74,6 +77,7 @@ const stageColors: Record<string, string> = {
 
 const stageBadgeColors: Record<string, string> = {
   new_lead: "bg-gray-200 text-gray-800",
+  contacted: "bg-teal-200 text-teal-800",
   in_conversation: "bg-blue-200 text-blue-800",
   proposal_negotiation: "bg-purple-200 text-purple-800",
   closed_won: "bg-green-200 text-green-800",
@@ -81,6 +85,7 @@ const stageBadgeColors: Record<string, string> = {
 
 const stageDotColors: Record<string, string> = {
   new_lead: "bg-gray-400",
+  contacted: "bg-teal-400",
   in_conversation: "bg-blue-400",
   proposal_negotiation: "bg-purple-400",
   closed_won: "bg-green-400",
@@ -88,6 +93,7 @@ const stageDotColors: Record<string, string> = {
 
 const stageHeaderBg: Record<string, string> = {
   new_lead: "bg-gray-50",
+  contacted: "bg-teal-50",
   in_conversation: "bg-blue-50",
   proposal_negotiation: "bg-purple-50",
   closed_won: "bg-green-50",

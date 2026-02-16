@@ -6,6 +6,7 @@ import { Target, DollarSign, TrendingUp, Clock, CalendarCheck } from "lucide-rea
 
 const stageLabels: Record<string, string> = {
   new_lead: "New Lead",
+  contacted: "Contacted",
   in_conversation: "In Conversation",
   proposal_negotiation: "Proposal/Negotiation",
   closed_won: "Closed Won",
@@ -20,6 +21,7 @@ const stageColors: Record<string, string> = {
 
 const stageBarColors: Record<string, string> = {
   new_lead: "bg-gray-400",
+  contacted: "bg-teal-500",
   in_conversation: "bg-blue-500",
   proposal_negotiation: "bg-purple-500",
   closed_won: "bg-green-500",
@@ -27,6 +29,7 @@ const stageBarColors: Record<string, string> = {
 
 const stageDotColors: Record<string, string> = {
   new_lead: "bg-gray-400",
+  contacted: "bg-teal-500",
   in_conversation: "bg-blue-500",
   proposal_negotiation: "bg-purple-500",
   closed_won: "bg-green-500",

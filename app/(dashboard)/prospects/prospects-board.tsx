@@ -17,6 +17,13 @@ const boardColumns = [
     headerColor: "bg-gray-200",
   },
   {
+    id: "contacted",
+    title: "Contacted",
+    stages: ["contacted"] as ProspectStage[],
+    color: "bg-teal-100 border-teal-300",
+    headerColor: "bg-teal-200",
+  },
+  {
     id: "in_conversation",
     title: "In Conversation",
     stages: ["in_conversation"] as ProspectStage[],
