@@ -613,11 +613,13 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Stages</SelectItem>
-            {Object.entries(stageLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
+            {Object.entries(stageLabels)
+              .filter(([value]) => value !== "closed_lost")
+              .map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
         <Select value={functionFilter} onValueChange={setFunctionFilter}>
