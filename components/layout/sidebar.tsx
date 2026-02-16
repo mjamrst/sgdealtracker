@@ -25,6 +25,7 @@ import {
   Check,
   FileText,
   Archive,
+  CalendarDays,
 } from "lucide-react";
 import { setCurrentStartup } from "@/app/actions/startup";
 
@@ -36,6 +37,7 @@ const startupLogos: Record<string, string> = {
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Prospects", href: "/prospects", icon: Target },
+  { name: "Calendar", href: "/calendar", icon: CalendarDays },
   { name: "Dead Leads", href: "/dead-leads", icon: Archive },
   { name: "Products", href: "/products", icon: Package },
   { name: "Materials", href: "/materials", icon: FolderOpen },
