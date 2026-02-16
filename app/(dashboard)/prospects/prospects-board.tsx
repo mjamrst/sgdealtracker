@@ -12,6 +12,7 @@ const boardColumns = [
   {
     id: "new_lead",
     title: "New Lead",
+    description: "Identified as a potential prospect; no outreach yet.",
     stages: ["new_lead"] as ProspectStage[],
     color: "bg-gray-100 border-gray-300",
     headerColor: "bg-gray-200",
@@ -19,6 +20,7 @@ const boardColumns = [
   {
     id: "contacted",
     title: "Contacted",
+    description: "Initial outreach sent; awaiting a response.",
     stages: ["contacted"] as ProspectStage[],
     color: "bg-teal-100 border-teal-300",
     headerColor: "bg-teal-200",
@@ -26,6 +28,7 @@ const boardColumns = [
   {
     id: "in_conversation",
     title: "In Conversation",
+    description: "Actively engaged in dialogue about opportunities.",
     stages: ["in_conversation"] as ProspectStage[],
     color: "bg-blue-100 border-blue-300",
     headerColor: "bg-blue-200",
@@ -33,6 +36,7 @@ const boardColumns = [
   {
     id: "proposal_negotiation",
     title: "Proposal/Negotiation",
+    description: "Proposal delivered; working through terms and details.",
     stages: ["proposal_negotiation"] as ProspectStage[],
     color: "bg-purple-100 border-purple-300",
     headerColor: "bg-purple-200",
@@ -40,6 +44,7 @@ const boardColumns = [
   {
     id: "closed_won",
     title: "Closed Won",
+    description: "Deal signed and partnership confirmed.",
     stages: ["closed_won"] as ProspectStage[],
     color: "bg-green-100 border-green-300",
     headerColor: "bg-green-200",
@@ -156,6 +161,7 @@ export function ProspectsBoard({ prospects, onStageChange, isAdmin }: ProspectsB
                   {getProspectsForStage(column.stages[0]).length}
                 </span>
               </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{column.description}</p>
             </div>
 
             {/* Column Content */}

@@ -99,6 +99,14 @@ const stageHeaderBg: Record<string, string> = {
   closed_won: "bg-green-50",
 };
 
+const stageDescriptions: Record<string, string> = {
+  new_lead: "Identified as a potential prospect; no outreach yet.",
+  contacted: "Initial outreach sent; awaiting a response.",
+  in_conversation: "Actively engaged in dialogue about opportunities.",
+  proposal_negotiation: "Proposal delivered; working through terms and details.",
+  closed_won: "Deal signed and partnership confirmed.",
+};
+
 const functionLabels: Record<ProspectFunction, string> = {
   marketing: "Marketing",
   insights: "Insights",
@@ -729,10 +737,13 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
         ) : (
           groupedProspects.map((group) => (
             <div key={group.stage} className="space-y-3">
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${stageHeaderBg[group.stage]}`}>
-                <span className={`h-2.5 w-2.5 rounded-full ${stageDotColors[group.stage]}`} />
-                <span className="text-sm font-semibold">{group.label}</span>
-                <span className="text-xs text-muted-foreground">{group.prospects.length}</span>
+              <div className={`px-3 py-2 rounded-lg ${stageHeaderBg[group.stage]}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${stageDotColors[group.stage]}`} />
+                  <span className="text-sm font-semibold">{group.label}</span>
+                  <span className="text-xs text-muted-foreground">{group.prospects.length}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 ml-[18px]">{stageDescriptions[group.stage]}</p>
               </div>
               {group.prospects.map((prospect) => (
                 <Link
@@ -828,6 +839,8 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                         <span className={`h-2.5 w-2.5 rounded-full ${stageDotColors[group.stage]}`} />
                         <span className="text-sm font-semibold">{group.label}</span>
                         <span className="text-xs text-muted-foreground">{group.prospects.length}</span>
+                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-xs text-muted-foreground">{stageDescriptions[group.stage]}</span>
                       </div>
                     </TableCell>
                   </TableRow>
