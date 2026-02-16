@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target, DollarSign, TrendingUp, Clock } from "lucide-react";
+import { Target, DollarSign, TrendingUp, Clock, CalendarCheck } from "lucide-react";
 
 const stageLabels: Record<string, string> = {
   new_lead: "New Lead",
@@ -120,6 +120,26 @@ export default async function DashboardPage() {
     upcomingMeetings = (upcomingMeetingsData as typeof upcomingMeetings) || [];
   }
 
+  // Count meetings scheduled in the current month
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+  const currentMonthName = now.toLocaleDateString("en-US", { month: "long" });
+  const MONTHLY_MEETING_GOAL = 10;
+  let monthlyMeetingCount = 0;
+  if (startupId) {
+    const { count } = await supabase
+      .from("prospects")
+      .select("id", { count: "exact", head: true })
+      .eq("startup_id", startupId)
+      .gte("meeting_date", monthStart)
+      .lte("meeting_date", monthEnd)
+      .not("meeting_date", "is", null);
+    monthlyMeetingCount = count || 0;
+  }
+  const meetingProgress = Math.min((monthlyMeetingCount / MONTHLY_MEETING_GOAL) * 100, 100);
+  const meetingGoalMet = monthlyMeetingCount >= MONTHLY_MEETING_GOAL;
+
   // Get prospects with upcoming next steps/actions for current startup
   let nextSteps: { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] = [];
   if (startupId) {
@@ -135,9 +155,28 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your sales pipeline</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-muted-foreground">Overview of your sales pipeline</p>
+        </div>
+        <div className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 ${meetingGoalMet ? "border-green-200 bg-green-50" : "border-border bg-muted/50"}`}>
+          <CalendarCheck className={`h-5 w-5 shrink-0 ${meetingGoalMet ? "text-green-600" : "text-muted-foreground"}`} />
+          <div className="flex flex-col gap-1 min-w-0">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <span>{currentMonthName} Meetings</span>
+              <span className={`font-bold ${meetingGoalMet ? "text-green-600" : ""}`}>
+                {monthlyMeetingCount}/{MONTHLY_MEETING_GOAL}
+              </span>
+            </div>
+            <div className="h-1.5 w-36 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${meetingGoalMet ? "bg-green-500" : "bg-blue-500"}`}
+                style={{ width: `${meetingProgress}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
