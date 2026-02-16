@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/queries";
 import { Sidebar } from "@/components/layout/sidebar";
 
 export default async function DashboardLayout({
@@ -8,21 +7,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const cookieStore = await cookies();
-
-  const { data: { user } } = await supabase.auth.getUser();
+  const { user, profile, supabase } = await getAuth();
 
   if (!user) {
     redirect("/login");
   }
-
-  // Get user profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("email, full_name, role")
-    .eq("id", user.id)
-    .single();
 
   const userProfile = profile || {
     email: user.email || "",
@@ -30,18 +19,16 @@ export default async function DashboardLayout({
     role: "founder",
   };
 
-  // Get user's startups
+  // Get user's startups for the sidebar
   let startups: { id: string; name: string }[] = [];
 
   if (userProfile.role === "admin") {
-    // Admins can see all startups
     const { data } = await supabase
       .from("startups")
       .select("id, name")
       .order("name");
     startups = (data || []) as { id: string; name: string }[];
   } else {
-    // Regular users see their own startups
     const { data: memberships } = await supabase
       .from("startup_members")
       .select("startup_id")
@@ -58,7 +45,9 @@ export default async function DashboardLayout({
     }
   }
 
-  // Get current startup from cookie, default to first startup
+  // Get current startup from cookie
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
   const currentStartupId = cookieStore.get("current_startup_id")?.value;
   const currentStartup = startups.find(s => s.id === currentStartupId) || startups[0] || null;
 

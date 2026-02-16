@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/queries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Target, DollarSign, TrendingUp, Clock, CalendarCheck } from "lucide-react";
@@ -36,52 +35,66 @@ const stageDotColors: Record<string, string> = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const cookieStore = await cookies();
+  const { startupId, supabase } = await getAuth();
 
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
+  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+  const currentMonthName = now.toLocaleDateString("en-US", { month: "long" });
+  const MONTHLY_MEETING_GOAL = 10;
 
-  // Get user's profile by ID
-  const { data: profileData } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", user?.id || "")
-    .single();
-
-  const profile = profileData as { id: string; role: string } | null;
-
-  // Get current startup from cookie
-  const currentStartupId = cookieStore.get("current_startup_id")?.value;
-
-  // Verify user has access to this startup
-  let hasAccess = false;
-  if (currentStartupId) {
-    if (profile?.role === "admin") {
-      hasAccess = true;
-    } else if (profile) {
-      const { data: membership } = await supabase
-        .from("startup_members")
-        .select("id")
-        .eq("user_id", profile.id)
-        .eq("startup_id", currentStartupId)
-        .single();
-      hasAccess = !!membership;
-    }
-  }
-
-  // If no valid startup selected, show empty state
-  const startupId = hasAccess ? currentStartupId : null;
-
-  // Get prospects stats for current startup only
+  // Run all data queries in parallel
   let prospects: { id: string; stage: string; estimated_value: number | null }[] = [];
+  let activities: { id: string; description: string; created_at: string; action_type: string }[] = [];
+  let upcomingMeetings: { id: string; company_name: string; contact_name: string | null; meeting_date: string | null }[] = [];
+  let monthlyMeetingCount = 0;
+  let nextSteps: { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] = [];
+
   if (startupId) {
-    const { data: prospectsData } = await supabase
-      .from("prospects")
-      .select("id, stage, estimated_value")
-      .eq("startup_id", startupId)
-      .neq("stage", "closed_lost");
-    prospects = (prospectsData as typeof prospects) || [];
+    const [prospectsRes, activitiesRes, upcomingRes, monthlyRes, nextStepsRes] = await Promise.all([
+      supabase
+        .from("prospects")
+        .select("id, stage, estimated_value")
+        .eq("startup_id", startupId)
+        .neq("stage", "closed_lost"),
+      supabase
+        .from("activity_log")
+        .select("id, description, created_at, action_type")
+        .eq("startup_id", startupId)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("prospects")
+        .select("id, company_name, contact_name, meeting_date")
+        .eq("startup_id", startupId)
+        .neq("stage", "closed_lost")
+        .gte("meeting_date", today)
+        .not("meeting_date", "is", null)
+        .order("meeting_date", { ascending: true }),
+      supabase
+        .from("prospects")
+        .select("id", { count: "exact", head: true })
+        .eq("startup_id", startupId)
+        .neq("stage", "closed_lost")
+        .gte("meeting_date", monthStart)
+        .lte("meeting_date", monthEnd)
+        .not("meeting_date", "is", null),
+      supabase
+        .from("prospects")
+        .select("id, company_name, next_action, next_action_due")
+        .eq("startup_id", startupId)
+        .neq("stage", "closed_lost")
+        .gte("next_action_due", today)
+        .not("next_action", "is", null)
+        .order("next_action_due", { ascending: true }),
+    ]);
+
+    prospects = (prospectsRes.data as typeof prospects) || [];
+    activities = (activitiesRes.data as typeof activities) || [];
+    upcomingMeetings = (upcomingRes.data as typeof upcomingMeetings) || [];
+    monthlyMeetingCount = monthlyRes.count || 0;
+    nextSteps = (nextStepsRes.data as typeof nextSteps) || [];
   }
 
   const totalProspects = prospects.length;
@@ -94,67 +107,8 @@ export default async function DashboardPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  // Get recent activity for current startup
-  let activities: { id: string; description: string; created_at: string; action_type: string }[] = [];
-  if (startupId) {
-    const { data: activitiesData } = await supabase
-      .from("activity_log")
-      .select("id, description, created_at, action_type")
-      .eq("startup_id", startupId)
-      .order("created_at", { ascending: false })
-      .limit(10);
-    activities = (activitiesData as typeof activities) || [];
-  }
-
-  // Get prospects with upcoming meetings for current startup
-  const today = new Date().toISOString().split("T")[0];
-  let upcomingMeetings: { id: string; company_name: string; contact_name: string | null; meeting_date: string | null }[] = [];
-  if (startupId) {
-    const { data: upcomingMeetingsData } = await supabase
-      .from("prospects")
-      .select("id, company_name, contact_name, meeting_date")
-      .eq("startup_id", startupId)
-      .neq("stage", "closed_lost")
-      .gte("meeting_date", today)
-      .not("meeting_date", "is", null)
-      .order("meeting_date", { ascending: true });
-    upcomingMeetings = (upcomingMeetingsData as typeof upcomingMeetings) || [];
-  }
-
-  // Count meetings scheduled in the current month
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
-  const currentMonthName = now.toLocaleDateString("en-US", { month: "long" });
-  const MONTHLY_MEETING_GOAL = 10;
-  let monthlyMeetingCount = 0;
-  if (startupId) {
-    const { count } = await supabase
-      .from("prospects")
-      .select("id", { count: "exact", head: true })
-      .eq("startup_id", startupId)
-      .neq("stage", "closed_lost")
-      .gte("meeting_date", monthStart)
-      .lte("meeting_date", monthEnd)
-      .not("meeting_date", "is", null);
-    monthlyMeetingCount = count || 0;
-  }
   const meetingProgress = Math.min((monthlyMeetingCount / MONTHLY_MEETING_GOAL) * 100, 100);
   const meetingGoalMet = monthlyMeetingCount >= MONTHLY_MEETING_GOAL;
-
-  // Get prospects with upcoming next steps/actions for current startup
-  let nextSteps: { id: string; company_name: string; next_action: string | null; next_action_due: string | null }[] = [];
-  if (startupId) {
-    const { data: nextStepsData } = await supabase
-      .from("prospects")
-      .select("id, company_name, next_action, next_action_due")
-      .eq("startup_id", startupId)
-      .neq("stage", "closed_lost")
-      .gte("next_action_due", today)
-      .not("next_action", "is", null)
-      .order("next_action_due", { ascending: true });
-    nextSteps = (nextStepsData as typeof nextSteps) || [];
-  }
 
   return (
     <div className="space-y-8">

@@ -1,82 +1,41 @@
-import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { getAuth } from "@/lib/supabase/queries";
 import { ProspectsList } from "./prospects-list";
 
 export default async function ProspectsPage() {
-  const supabase = await createClient();
-  const cookieStore = await cookies();
+  const { profile, startupId, supabase } = await getAuth();
 
-  // Get current user
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Get user's profile by ID
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", user?.id || "")
-    .single();
-
-  // Get current startup from cookie
-  const currentStartupId = cookieStore.get("current_startup_id")?.value;
-
-  // Verify user has access to this startup
-  let hasAccess = false;
-  if (currentStartupId) {
-    if (profile?.role === "admin") {
-      hasAccess = true;
-    } else if (profile) {
-      const { data: membership } = await supabase
-        .from("startup_members")
-        .select("id")
-        .eq("user_id", profile.id)
-        .eq("startup_id", currentStartupId)
-        .single();
-      hasAccess = !!membership;
-    }
-  }
-
-  const startupId = hasAccess ? currentStartupId : null;
-
-  // Get prospects for current startup only
+  // Run independent queries in parallel
   let prospects: any[] = [];
-  if (startupId) {
-    const { data } = await supabase
-      .from("prospects")
-      .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
-      .eq("startup_id", startupId)
-      .neq("stage", "closed_lost")
-      .order("updated_at", { ascending: false });
-    prospects = data || [];
-  }
-
-  // Get current startup for the form (single startup now)
   let startups: { id: string; name: string }[] = [];
-  if (startupId) {
-    const { data } = await supabase
-      .from("startups")
-      .select("id, name")
-      .eq("id", startupId);
-    startups = data || [];
-  }
-
-  // Get users for owner dropdown: startup members + admins
   let users: { id: string; full_name: string | null; email: string }[] = [];
+
   if (startupId) {
-    // Get members of this startup
-    const { data: members } = await supabase
-      .from("startup_members")
-      .select("user_id")
-      .eq("startup_id", startupId);
-    const memberIds = (members || []).map((m) => m.user_id);
+    const [prospectsRes, startupsRes, membersRes, adminsRes] = await Promise.all([
+      supabase
+        .from("prospects")
+        .select("*, startup:startups(name), owner:profiles!prospects_owner_id_fkey(id, full_name)")
+        .eq("startup_id", startupId)
+        .neq("stage", "closed_lost")
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("startups")
+        .select("id, name")
+        .eq("id", startupId),
+      supabase
+        .from("startup_members")
+        .select("user_id")
+        .eq("startup_id", startupId),
+      supabase
+        .from("profiles")
+        .select("id")
+        .eq("role", "admin"),
+    ]);
 
-    // Get admin profiles
-    const { data: admins } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("role", "admin");
-    const adminIds = (admins || []).map((a) => a.id);
+    prospects = prospectsRes.data || [];
+    startups = startupsRes.data || [];
 
-    // Combine unique IDs
+    const memberIds = (membersRes.data || []).map((m) => m.user_id);
+    const adminIds = (adminsRes.data || []).map((a) => a.id);
     const allIds = [...new Set([...memberIds, ...adminIds])];
 
     if (allIds.length > 0) {
