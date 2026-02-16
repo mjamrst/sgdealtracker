@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -49,6 +49,13 @@ import { ProspectsBoard } from "./prospects-board";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Prospect, ProspectStage, ProspectFunction, ProspectSource } from "@/lib/types/database";
 
+const stageOrder: string[] = [
+  "closed_won",
+  "proposal_negotiation",
+  "in_conversation",
+  "new_lead",
+];
+
 const stageLabels: Record<string, string> = {
   new_lead: "New Lead",
   in_conversation: "In Conversation",
@@ -68,6 +75,20 @@ const stageBadgeColors: Record<string, string> = {
   in_conversation: "bg-blue-200 text-blue-800",
   proposal_negotiation: "bg-purple-200 text-purple-800",
   closed_won: "bg-green-200 text-green-800",
+};
+
+const stageDotColors: Record<string, string> = {
+  new_lead: "bg-gray-400",
+  in_conversation: "bg-blue-400",
+  proposal_negotiation: "bg-purple-400",
+  closed_won: "bg-green-400",
+};
+
+const stageHeaderBg: Record<string, string> = {
+  new_lead: "bg-gray-50",
+  in_conversation: "bg-blue-50",
+  proposal_negotiation: "bg-purple-50",
+  closed_won: "bg-green-50",
 };
 
 const functionLabels: Record<ProspectFunction, string> = {
@@ -144,6 +165,14 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
     const matchesIndustry = industryFilter === "all" || prospect.industry === industryFilter;
     return matchesSearch && matchesStage && matchesFunction && matchesIndustry;
   });
+
+  const groupedProspects = stageOrder
+    .map((stage) => ({
+      stage,
+      label: stageLabels[stage],
+      prospects: filteredProspects.filter((p) => p.stage === stage),
+    }))
+    .filter((group) => group.prospects.length > 0);
 
   const handleStageChange = async (prospectId: string, newStage: ProspectStage) => {
     const { error } = await supabase
@@ -688,46 +717,55 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
             No prospects found
           </div>
         ) : (
-          filteredProspects.map((prospect) => (
-            <Link
-              key={prospect.id}
-              href={`/prospects/${prospect.id}`}
-              className="block bg-card rounded-xl border p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate">{prospect.company_name}</h3>
-                  {prospect.contact_name && (
-                    <p className="text-sm text-muted-foreground truncate">{prospect.contact_name}</p>
-                  )}
-                  {isAdmin && prospect.startup && (
-                    <p className="text-xs text-muted-foreground">{prospect.startup.name}</p>
-                  )}
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+          groupedProspects.map((group) => (
+            <div key={group.stage} className="space-y-3">
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${stageHeaderBg[group.stage]}`}>
+                <span className={`h-2.5 w-2.5 rounded-full ${stageDotColors[group.stage]}`} />
+                <span className="text-sm font-semibold">{group.label}</span>
+                <span className="text-xs text-muted-foreground">{group.prospects.length}</span>
               </div>
-              <div className="flex flex-wrap items-center gap-2 mt-3">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageBadgeColors[prospect.stage]}`}>
-                  {stageLabels[prospect.stage]}
-                </span>
-                {prospect.source === "ai_generated" && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                    <Sparkles className="h-3 w-3" />
-                    AI
-                  </span>
-                )}
-                {prospect.industry && (
-                  <span className="text-xs text-muted-foreground">
-                    {prospect.industry}
-                  </span>
-                )}
-                {prospect.estimated_value && (
-                  <span className="text-xs font-medium">
-                    ${prospect.estimated_value.toLocaleString()}
-                  </span>
-                )}
-              </div>
-            </Link>
+              {group.prospects.map((prospect) => (
+                <Link
+                  key={prospect.id}
+                  href={`/prospects/${prospect.id}`}
+                  className="block bg-card rounded-xl border p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium truncate">{prospect.company_name}</h3>
+                      {prospect.contact_name && (
+                        <p className="text-sm text-muted-foreground truncate">{prospect.contact_name}</p>
+                      )}
+                      {isAdmin && prospect.startup && (
+                        <p className="text-xs text-muted-foreground">{prospect.startup.name}</p>
+                      )}
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageBadgeColors[prospect.stage]}`}>
+                      {stageLabels[prospect.stage]}
+                    </span>
+                    {prospect.source === "ai_generated" && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                        <Sparkles className="h-3 w-3" />
+                        AI
+                      </span>
+                    )}
+                    {prospect.industry && (
+                      <span className="text-xs text-muted-foreground">
+                        {prospect.industry}
+                      </span>
+                    )}
+                    {prospect.estimated_value && (
+                      <span className="text-xs font-medium">
+                        ${prospect.estimated_value.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
           ))
         )}
       </div>
@@ -772,135 +810,148 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                 </TableCell>
               </TableRow>
             ) : (
-              filteredProspects.map((prospect) => (
-                <TableRow key={prospect.id} className={selectedIds.has(prospect.id) ? "bg-primary/5" : ""}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedIds.has(prospect.id)}
-                      onCheckedChange={(checked) => handleSelectOne(prospect.id, checked as boolean)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/prospects/${prospect.id}`}
-                      className="font-medium hover:text-primary"
-                    >
-                      {prospect.company_name}
-                    </Link>
-                    {isAdmin && prospect.startup && (
-                      <p className="text-xs text-muted-foreground">{prospect.startup.name}</p>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p>{prospect.contact_name || "-"}</p>
-                      {prospect.contact_email && (
-                        <p className="text-xs text-muted-foreground">{prospect.contact_email}</p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <Select
-                      value={prospect.industry || ""}
-                      onValueChange={(value) => handleIndustryChange(prospect.id, value)}
-                    >
-                      <SelectTrigger className="w-[160px] border-0 bg-transparent hover:bg-muted">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {industries.map((industry) => (
-                          <SelectItem key={industry} value={industry}>
-                            {industry}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <Select
-                      value={prospect.function}
-                      onValueChange={(value: ProspectFunction) => handleFunctionChange(prospect.id, value)}
-                    >
-                      <SelectTrigger className="w-[120px] border-0 bg-secondary/50 hover:bg-secondary">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(functionLabels).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="hidden xl:table-cell">
-                    {prospect.source === "ai_generated" ? (
-                      <div className="flex items-center gap-1.5 text-purple-600">
-                        <Sparkles className="h-4 w-4" />
-                        <span className="text-sm font-medium">AI Generated</span>
+              groupedProspects.map((group) => (
+                <React.Fragment key={group.stage}>
+                  <TableRow className={stageHeaderBg[group.stage]}>
+                    <TableCell colSpan={9} className="py-2 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`h-2.5 w-2.5 rounded-full ${stageDotColors[group.stage]}`} />
+                        <span className="text-sm font-semibold">{group.label}</span>
+                        <span className="text-xs text-muted-foreground">{group.prospects.length}</span>
                       </div>
-                    ) : (
-                      <Select
-                        value={prospect.owner_id || "unassigned"}
-                        onValueChange={(value) => handleOwnerChange(prospect.id, value === "unassigned" ? null : value)}
-                      >
-                        <SelectTrigger className="w-[130px] border-0 bg-transparent hover:bg-muted">
-                          <SelectValue placeholder="Unassigned" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="unassigned">Unassigned</SelectItem>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.full_name || user.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {prospect.estimated_value
-                      ? `$${prospect.estimated_value.toLocaleString()}`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={prospect.stage}
-                      onValueChange={(value: ProspectStage) =>
-                        handleStageChange(prospect.id, value)
-                      }
-                    >
-                      <SelectTrigger className={`w-[150px] border-0 ${stageColors[prospect.stage]}`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(stageLabels).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="hidden xl:table-cell">
-                    {prospect.next_action ? (
-                      <div>
-                        <p className="text-sm">{prospect.next_action}</p>
-                        {prospect.next_action_due && (
-                          <p className="text-xs text-muted-foreground">
-                            Due{" "}
-                            {new Date(prospect.next_action_due).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </p>
+                    </TableCell>
+                  </TableRow>
+                  {group.prospects.map((prospect) => (
+                    <TableRow key={prospect.id} className={selectedIds.has(prospect.id) ? "bg-primary/5" : ""}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(prospect.id)}
+                          onCheckedChange={(checked) => handleSelectOne(prospect.id, checked as boolean)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/prospects/${prospect.id}`}
+                          className="font-medium hover:text-primary"
+                        >
+                          {prospect.company_name}
+                        </Link>
+                        {isAdmin && prospect.startup && (
+                          <p className="text-xs text-muted-foreground">{prospect.startup.name}</p>
                         )}
-                      </div>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                </TableRow>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p>{prospect.contact_name || "-"}</p>
+                          {prospect.contact_email && (
+                            <p className="text-xs text-muted-foreground">{prospect.contact_email}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <Select
+                          value={prospect.industry || ""}
+                          onValueChange={(value) => handleIndustryChange(prospect.id, value)}
+                        >
+                          <SelectTrigger className="w-[160px] border-0 bg-transparent hover:bg-muted">
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {industries.map((industry) => (
+                              <SelectItem key={industry} value={industry}>
+                                {industry}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <Select
+                          value={prospect.function}
+                          onValueChange={(value: ProspectFunction) => handleFunctionChange(prospect.id, value)}
+                        >
+                          <SelectTrigger className="w-[120px] border-0 bg-secondary/50 hover:bg-secondary">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(functionLabels).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell">
+                        {prospect.source === "ai_generated" ? (
+                          <div className="flex items-center gap-1.5 text-purple-600">
+                            <Sparkles className="h-4 w-4" />
+                            <span className="text-sm font-medium">AI Generated</span>
+                          </div>
+                        ) : (
+                          <Select
+                            value={prospect.owner_id || "unassigned"}
+                            onValueChange={(value) => handleOwnerChange(prospect.id, value === "unassigned" ? null : value)}
+                          >
+                            <SelectTrigger className="w-[130px] border-0 bg-transparent hover:bg-muted">
+                              <SelectValue placeholder="Unassigned" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              {users.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                  {user.full_name || user.email}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {prospect.estimated_value
+                          ? `$${prospect.estimated_value.toLocaleString()}`
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={prospect.stage}
+                          onValueChange={(value: ProspectStage) =>
+                            handleStageChange(prospect.id, value)
+                          }
+                        >
+                          <SelectTrigger className={`w-[150px] border-0 ${stageColors[prospect.stage]}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(stageLabels).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell">
+                        {prospect.next_action ? (
+                          <div>
+                            <p className="text-sm">{prospect.next_action}</p>
+                            {prospect.next_action_due && (
+                              <p className="text-xs text-muted-foreground">
+                                Due{" "}
+                                {new Date(prospect.next_action_due).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </React.Fragment>
               ))
             )}
           </TableBody>
