@@ -4,8 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, GripVertical } from "lucide-react";
+import { Sparkles, GripVertical, CalendarCheck } from "lucide-react";
 import type { Prospect, ProspectStage } from "@/lib/types/database";
+
+function hasUpcomingMeeting(meetingDate: string | null): boolean {
+  if (!meetingDate) return false;
+  return meetingDate >= new Date().toISOString().split("T")[0];
+}
 
 // Board column configuration
 const boardColumns = [
@@ -119,6 +124,15 @@ export function ProspectsBoard({ prospects, onStageChange, isAdmin }: ProspectsB
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-700">
                 <Sparkles className="h-2.5 w-2.5" />
                 AI
+              </span>
+            )}
+            {hasUpcomingMeeting(prospect.meeting_date) && (
+              <span
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-700"
+                title={`Meeting: ${new Date(prospect.meeting_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
+              >
+                <CalendarCheck className="h-2.5 w-2.5" />
+                Mtg
               </span>
             )}
             {prospect.estimated_value && (

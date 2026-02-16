@@ -44,10 +44,15 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Search, Filter, X, ChevronRight, Sparkles, List, LayoutGrid, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, X, ChevronRight, Sparkles, List, LayoutGrid, Trash2, CalendarCheck } from "lucide-react";
 import { ProspectsBoard } from "./prospects-board";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Prospect, ProspectStage, ProspectFunction, ProspectSource } from "@/lib/types/database";
+
+function hasUpcomingMeeting(meetingDate: string | null): boolean {
+  if (!meetingDate) return false;
+  return meetingDate >= new Date().toISOString().split("T")[0];
+}
 
 const stageOrder: string[] = [
   "closed_won",
@@ -773,6 +778,15 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                         AI
                       </span>
                     )}
+                    {hasUpcomingMeeting(prospect.meeting_date) && (
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700"
+                        title={`Meeting: ${new Date(prospect.meeting_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
+                      >
+                        <CalendarCheck className="h-3 w-3" />
+                        Meeting
+                      </span>
+                    )}
                     {prospect.industry && (
                       <span className="text-xs text-muted-foreground">
                         {prospect.industry}
@@ -853,12 +867,23 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                         />
                       </TableCell>
                       <TableCell>
-                        <Link
-                          href={`/prospects/${prospect.id}`}
-                          className="font-medium hover:text-primary"
-                        >
-                          {prospect.company_name}
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/prospects/${prospect.id}`}
+                            className="font-medium hover:text-primary"
+                          >
+                            {prospect.company_name}
+                          </Link>
+                          {hasUpcomingMeeting(prospect.meeting_date) && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700 shrink-0"
+                              title={`Meeting: ${new Date(prospect.meeting_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
+                            >
+                              <CalendarCheck className="h-3 w-3" />
+                              {new Date(prospect.meeting_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </span>
+                          )}
+                        </div>
                         {isAdmin && prospect.startup && (
                           <p className="text-xs text-muted-foreground">{prospect.startup.name}</p>
                         )}
