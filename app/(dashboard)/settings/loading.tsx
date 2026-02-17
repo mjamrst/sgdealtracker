@@ -24,7 +24,7 @@ export default function SettingsLoading() {
           </div>
         </div>
 
-        {/* Startups card */}
+        {/* Companies card */}
         <div className="rounded-lg border bg-card p-6">
           <div className="h-5 w-24 bg-muted rounded mb-4" />
           <div className="space-y-3">

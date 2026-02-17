@@ -444,7 +444,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {startups.length > 1 && (
                   <div className="sm:col-span-2 space-y-2">
-                    <Label htmlFor="startup">Startup</Label>
+                    <Label htmlFor="startup">Company</Label>
                     <Select
                       value={newProspect.startup_id}
                       onValueChange={(value) =>
@@ -452,7 +452,7 @@ export function ProspectsList({ initialProspects, startups, users, isAdmin }: Pr
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select startup" />
+                        <SelectValue placeholder="Select company" />
                       </SelectTrigger>
                       <SelectContent>
                         {startups.map((startup) => (

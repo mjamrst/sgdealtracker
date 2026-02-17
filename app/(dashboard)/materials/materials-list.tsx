@@ -303,7 +303,7 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
             <form onSubmit={handleCreateMaterial} className="space-y-4">
               {startups.length > 1 && (
                 <div className="space-y-2">
-                  <Label htmlFor="startup">Startup</Label>
+                  <Label htmlFor="startup">Company</Label>
                   <Select
                     value={formData.startup_id}
                     onValueChange={(value) =>
@@ -311,7 +311,7 @@ export function MaterialsList({ initialMaterials, startups, isAdmin }: Materials
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select startup" />
+                      <SelectValue placeholder="Select company" />
                     </SelectTrigger>
                     <SelectContent>
                       {startups.map((startup) => (

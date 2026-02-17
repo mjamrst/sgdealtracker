@@ -198,13 +198,13 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
       .single();
 
     if (error) {
-      toast.error("Failed to create startup");
+      toast.error("Failed to create company");
       return;
     }
 
     setIsStartupDialogOpen(false);
     setStartupData({ name: "", description: "", category: "" });
-    toast.success("Startup created");
+    toast.success("Company created");
     router.refresh();
   };
 
@@ -222,13 +222,13 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
       .eq("id", editStartupData.id);
 
     if (error) {
-      toast.error("Failed to update startup");
+      toast.error("Failed to update company");
       return;
     }
 
     setIsEditStartupDialogOpen(false);
     setEditStartupData(null);
-    toast.success("Startup updated");
+    toast.success("Company updated");
     router.refresh();
   };
 
@@ -239,11 +239,11 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
       .eq("id", startupId);
 
     if (error) {
-      toast.error("Failed to delete startup. It may have associated data.");
+      toast.error("Failed to delete company. It may have associated data.");
       return;
     }
 
-    toast.success("Startup deleted");
+    toast.success("Company deleted");
     router.refresh();
   };
 
@@ -287,7 +287,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           {isAdmin && <TabsTrigger value="team">Team & Invites</TabsTrigger>}
-          {isAdmin && <TabsTrigger value="startups">Startups</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="startups">Companies</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="profile">
@@ -331,7 +331,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                   <div>
                     <CardTitle>Invite Team Members</CardTitle>
                     <CardDescription>
-                      Send invites to founders to join their startups
+                      Send invites to founders to join their companies
                     </CardDescription>
                   </div>
                   <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
@@ -345,7 +345,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                       <DialogHeader>
                         <DialogTitle>Invite Team Member</DialogTitle>
                         <DialogDescription>
-                          Send an invite to join a startup
+                          Send an invite to join a company
                         </DialogDescription>
                       </DialogHeader>
                       <form onSubmit={handleSendInvite} className="space-y-4">
@@ -363,7 +363,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="invite-startup">Startup</Label>
+                          <Label htmlFor="invite-startup">Company</Label>
                           <Select
                             value={inviteData.startup_id}
                             onValueChange={(value) =>
@@ -371,7 +371,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select startup" />
+                              <SelectValue placeholder="Select company" />
                             </SelectTrigger>
                             <SelectContent>
                               {startups.map((startup) => (
@@ -407,7 +407,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                       <TableHeader>
                         <TableRow>
                           <TableHead>Email</TableHead>
-                          <TableHead>Startup</TableHead>
+                          <TableHead>Company</TableHead>
                           <TableHead>Expires</TableHead>
                           <TableHead className="w-[100px]">Actions</TableHead>
                         </TableRow>
@@ -535,7 +535,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="user-startup">Startup</Label>
+                          <Label htmlFor="user-startup">Company</Label>
                           <Select
                             value={newUserData.startup_id}
                             onValueChange={(value) =>
@@ -543,7 +543,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select startup" />
+                              <SelectValue placeholder="Select company" />
                             </SelectTrigger>
                             <SelectContent>
                               {startups.map((startup) => (
@@ -582,7 +582,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                         <TableRow>
                           <TableHead>Name</TableHead>
                           <TableHead>Email</TableHead>
-                          <TableHead>Startup</TableHead>
+                          <TableHead>Company</TableHead>
                           <TableHead>Last Sign In</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -633,20 +633,20 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Startups</CardTitle>
-                  <CardDescription>Manage the startups you advise</CardDescription>
+                  <CardTitle>Companies</CardTitle>
+                  <CardDescription>Manage the companies you advise</CardDescription>
                 </div>
                 <Dialog open={isStartupDialogOpen} onOpenChange={setIsStartupDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Startup
+                      Add Company
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add New Startup</DialogTitle>
-                      <DialogDescription>Add a new startup to track</DialogDescription>
+                      <DialogTitle>Add New Company</DialogTitle>
+                      <DialogDescription>Add a new company to track</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleCreateStartup} className="space-y-4">
                       <div className="space-y-2">
@@ -690,7 +690,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                         >
                           Cancel
                         </Button>
-                        <Button type="submit">Create Startup</Button>
+                        <Button type="submit">Create Company</Button>
                       </div>
                     </form>
                   </DialogContent>
@@ -700,7 +700,7 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                 {startups.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Building2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No startups yet</p>
+                    <p>No companies yet</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -737,9 +737,9 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Startup</AlertDialogTitle>
+                                  <AlertDialogTitle>Delete Company</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete &ldquo;{startup.name}&rdquo;? This will also remove all associated prospects, materials, and other data. This action cannot be undone.
+                                    Are you sure you want to delete &ldquo;{startup.name}&rdquo;? This will also remove all associated prospects, materials, and other data. This cannot be undone.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -773,8 +773,8 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
             <Dialog open={isEditStartupDialogOpen} onOpenChange={setIsEditStartupDialogOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Edit Startup</DialogTitle>
-                  <DialogDescription>Update startup details</DialogDescription>
+                  <DialogTitle>Edit Company</DialogTitle>
+                  <DialogDescription>Update company details</DialogDescription>
                 </DialogHeader>
                 {editStartupData && (
                   <form onSubmit={handleEditStartup} className="space-y-4">

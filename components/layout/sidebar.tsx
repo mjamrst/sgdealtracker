@@ -130,7 +130,7 @@ export function Sidebar({ user, startups, currentStartup }: SidebarProps) {
                 )}
                 <div className="flex-1 min-w-0 text-left hidden md:block">
                   <p className="font-semibold text-sm truncate">
-                    {currentStartup?.name || "Select Startup"}
+                    {currentStartup?.name || "Select Company"}
                   </p>
                   <p className="text-xs text-muted-foreground">Switch workspace</p>
                 </div>
@@ -164,7 +164,7 @@ export function Sidebar({ user, startups, currentStartup }: SidebarProps) {
             )}
             <div className="flex-1 min-w-0 hidden md:block">
               <p className="font-semibold text-sm truncate">
-                {currentStartup?.name || "No Startup"}
+                {currentStartup?.name || "No Company"}
               </p>
               <p className="text-xs text-muted-foreground">Workspace</p>
             </div>

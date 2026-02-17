@@ -188,7 +188,7 @@ export function ProductsList({ initialProducts, startups, isAdmin }: ProductsLis
             <form onSubmit={handleSubmit} className="space-y-4">
               {!editingProduct && startups.length > 1 && (
                 <div className="space-y-2">
-                  <Label htmlFor="startup">Startup</Label>
+                  <Label htmlFor="startup">Company</Label>
                   <Select
                     value={formData.startup_id}
                     onValueChange={(value) =>
@@ -196,7 +196,7 @@ export function ProductsList({ initialProducts, startups, isAdmin }: ProductsLis
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select startup" />
+                      <SelectValue placeholder="Select company" />
                     </SelectTrigger>
                     <SelectContent>
                       {startups.map((startup) => (
