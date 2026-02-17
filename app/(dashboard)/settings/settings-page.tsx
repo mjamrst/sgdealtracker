@@ -45,14 +45,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Save, Plus, Send, Copy, Trash2, Building2, Users, Mail, UserPlus, Clock } from "lucide-react";
+import { Save, Plus, Send, Copy, Trash2, Building2, Users, Mail, UserPlus, Clock, Pencil } from "lucide-react";
 import type { Profile } from "@/lib/types/database";
 import { createUserWithPassword } from "./actions";
 
 interface SettingsPageProps {
   profile: Profile | null;
   isAdmin: boolean;
-  startups: { id: string; name: string; description: string | null }[];
+  startups: { id: string; name: string; description: string | null; category: string | null }[];
   invites: {
     id: string;
     email: string;
@@ -88,6 +88,13 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
     category: "",
   });
   const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
+  const [isEditStartupDialogOpen, setIsEditStartupDialogOpen] = useState(false);
+  const [editStartupData, setEditStartupData] = useState<{
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+  } | null>(null);
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
   const [creatingUser, setCreatingUser] = useState(false);
   const [newUserData, setNewUserData] = useState({
@@ -198,6 +205,45 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
     setIsStartupDialogOpen(false);
     setStartupData({ name: "", description: "", category: "" });
     toast.success("Startup created");
+    router.refresh();
+  };
+
+  const handleEditStartup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editStartupData) return;
+
+    const { error } = await supabase
+      .from("startups")
+      .update({
+        name: editStartupData.name,
+        description: editStartupData.description || null,
+        category: editStartupData.category || null,
+      })
+      .eq("id", editStartupData.id);
+
+    if (error) {
+      toast.error("Failed to update startup");
+      return;
+    }
+
+    setIsEditStartupDialogOpen(false);
+    setEditStartupData(null);
+    toast.success("Startup updated");
+    router.refresh();
+  };
+
+  const handleDeleteStartup = async (startupId: string) => {
+    const { error } = await supabase
+      .from("startups")
+      .delete()
+      .eq("id", startupId);
+
+    if (error) {
+      toast.error("Failed to delete startup. It may have associated data.");
+      return;
+    }
+
+    toast.success("Startup deleted");
     router.refresh();
   };
 
@@ -660,8 +706,54 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {startups.map((startup) => (
                       <Card key={startup.id} className="bg-muted/30">
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pb-2 flex flex-row items-start justify-between gap-2">
                           <CardTitle className="text-base">{startup.name}</CardTitle>
+                          <div className="flex gap-1 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => {
+                                setEditStartupData({
+                                  id: startup.id,
+                                  name: startup.name,
+                                  description: startup.description || "",
+                                  category: startup.category || "",
+                                });
+                                setIsEditStartupDialogOpen(true);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Startup</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete &ldquo;{startup.name}&rdquo;? This will also remove all associated prospects, materials, and other data. This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteStartup(startup.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </CardHeader>
                         {startup.description && (
                           <CardContent className="pt-0">
@@ -676,6 +768,69 @@ export function SettingsPage({ profile, isAdmin, startups, invites: initialInvit
                 )}
               </CardContent>
             </Card>
+
+            {/* Edit Startup Dialog */}
+            <Dialog open={isEditStartupDialogOpen} onOpenChange={setIsEditStartupDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Startup</DialogTitle>
+                  <DialogDescription>Update startup details</DialogDescription>
+                </DialogHeader>
+                {editStartupData && (
+                  <form onSubmit={handleEditStartup} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-startup-name">Name *</Label>
+                      <Input
+                        id="edit-startup-name"
+                        value={editStartupData.name}
+                        onChange={(e) =>
+                          setEditStartupData((prev) =>
+                            prev ? { ...prev, name: e.target.value } : prev
+                          )
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-startup-description">Description</Label>
+                      <Textarea
+                        id="edit-startup-description"
+                        value={editStartupData.description}
+                        onChange={(e) =>
+                          setEditStartupData((prev) =>
+                            prev ? { ...prev, description: e.target.value } : prev
+                          )
+                        }
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-startup-category">Category</Label>
+                      <Input
+                        id="edit-startup-category"
+                        value={editStartupData.category}
+                        onChange={(e) =>
+                          setEditStartupData((prev) =>
+                            prev ? { ...prev, category: e.target.value } : prev
+                          )
+                        }
+                        placeholder="e.g., Consumer Insights, FinTech"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsEditStartupDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit">Save Changes</Button>
+                    </div>
+                  </form>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         )}
       </Tabs>

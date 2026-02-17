@@ -7,7 +7,7 @@ export default async function Settings() {
   const isAdmin = profile?.role === "admin";
 
   // Get startups (admin sees all, founders see their own)
-  let startups: { id: string; name: string; description: string | null }[] = [];
+  let startups: { id: string; name: string; description: string | null; category: string | null }[] = [];
   let invites: {
     id: string;
     email: string;
@@ -29,7 +29,7 @@ export default async function Settings() {
     const [startupsRes, invitesRes, teamRes] = await Promise.all([
       supabase
         .from("startups")
-        .select("id, name, description")
+        .select("id, name, description, category")
         .order("name"),
       supabase
         .from("invites")
@@ -70,7 +70,7 @@ export default async function Settings() {
   } else if (profile) {
     const { data: memberships } = await supabase
       .from("startup_members")
-      .select("startup:startups(id, name, description)")
+      .select("startup:startups(id, name, description, category)")
       .eq("user_id", profile.id);
     startups = memberships?.map((m) => m.startup as unknown as typeof startups[0]).filter(Boolean) || [];
   }
